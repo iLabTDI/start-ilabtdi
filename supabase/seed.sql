@@ -1,0 +1,12 @@
+-- Seed opcional para desarrollo local.
+-- NO se ejecuta en producción (supabase db reset lo aplica local).
+-- Descomenta para poblar datos de prueba.
+
+-- insert into auth.users (id, email, encrypted_password, email_confirmed_at)
+-- values (
+--   gen_random_uuid(),
+--   'dev@ilabtdi.local',
+--   crypt('Password123!', gen_salt('bf')),
+--   now()
+-- )
+-- on conflict (email) do nothing;

@@ -1,0 +1,12 @@
+node_modules
+dist
+build
+coverage
+pnpm-lock.yaml
+package-lock.json
+yarn.lock
+.next
+.vercel
+.netlify
+public
+src/types/database.ts

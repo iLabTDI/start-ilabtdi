@@ -1,0 +1,33 @@
+version: 2
+
+updates:
+  - package-ecosystem: 'npm'
+    directory: '/'
+    schedule:
+      interval: 'weekly'
+      day: 'monday'
+      time: '07:00'
+      timezone: 'America/Mexico_City'
+    open-pull-requests-limit: 10
+    labels: ['dependencies', 'automated']
+    commit-message:
+      prefix: 'chore(deps)'
+      include: 'scope'
+    groups:
+      radix:
+        patterns: ['@radix-ui/*']
+      eslint:
+        patterns: ['eslint*', '@eslint/*', 'typescript-eslint']
+      testing:
+        patterns: ['vitest', '@testing-library/*', 'jsdom']
+      tailwind:
+        patterns: ['tailwindcss*', '@tailwindcss/*']
+
+  - package-ecosystem: 'github-actions'
+    directory: '/'
+    schedule:
+      interval: 'weekly'
+    labels: ['dependencies', 'github-actions']
+    commit-message:
+      prefix: 'ci(deps)'
+      include: 'scope'

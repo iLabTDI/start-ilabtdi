@@ -1,0 +1,159 @@
+# ─────────────────────────────────────────────────────────────
+# Deploy a GoDaddy (cPanel) vía FTP/SFTP.
+#
+# Sube:
+#   • dist/     → $FTP_SERVER_DIR/         (SPA de producción)
+#   • backend/  → $FTP_SERVER_DIR/api/     (PHP + MySQL — solo si lo usas)
+#
+# Secrets en el repo → Settings → Secrets and variables → Actions:
+#
+#   FTP_SERVER         Host FTP — cPanel → FTP Accounts (ej. ftpupload.net)
+#   FTP_USERNAME       Usuario FTP (ej. deploy@tudominio.com)
+#   FTP_PASSWORD       Password FTP
+#   FTP_SERVER_DIR     Ruta remota absoluta (ej. /public_html/)
+#
+# Secrets del frontend (cualquiera de los dos bloques, según backend):
+#
+#   === Si AUTH_BACKEND=supabase ===
+#   VITE_SUPABASE_URL
+#   VITE_SUPABASE_ANON_KEY
+#
+#   === Si AUTH_BACKEND=php (MySQL de GoDaddy) ===
+#   JWT_SECRET         Secreto HS256 (openssl rand -hex 64)
+#   DB_HOST            Host MySQL (GoDaddy da uno tipo "sgXXX.md.iad1.mysql")
+#   DB_NAME
+#   DB_USER
+#   DB_PASS
+#
+# Variables del repo (Actions → Variables):
+#   VITE_APP_NAME, VITE_APP_URL, VITE_AUTH_BACKEND (supabase|php)
+# ─────────────────────────────────────────────────────────────
+
+name: Deploy · GoDaddy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      reason:
+        description: 'Motivo del deploy manual'
+        required: false
+        default: 'manual'
+
+concurrency:
+  group: deploy-godaddy
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    name: Build & upload
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment:
+      name: production
+      url: https://ilabtdi.com
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint & typecheck
+        run: |
+          pnpm lint
+          pnpm typecheck
+
+      - name: Build
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+          VITE_APP_NAME: ${{ vars.VITE_APP_NAME || 'iLab TDI' }}
+          VITE_APP_URL: ${{ vars.VITE_APP_URL || 'https://ilabtdi.com' }}
+          VITE_AUTH_BACKEND: ${{ vars.VITE_AUTH_BACKEND || 'supabase' }}
+          VITE_API_URL: ${{ vars.VITE_API_URL || '/api' }}
+        run: pnpm build
+
+      - name: Ensure .htaccess in dist
+        run: |
+          if [ ! -f dist/.htaccess ]; then
+            cp public/.htaccess dist/.htaccess
+          fi
+          echo "— dist listo —"
+          ls -la dist/
+
+      - name: Generar backend/config.php para el deploy (solo si AUTH_BACKEND=php)
+        if: ${{ vars.VITE_AUTH_BACKEND == 'php' }}
+        env:
+          DB_HOST: ${{ secrets.DB_HOST }}
+          DB_NAME: ${{ secrets.DB_NAME }}
+          DB_USER: ${{ secrets.DB_USER }}
+          DB_PASS: ${{ secrets.DB_PASS }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          APP_URL: ${{ vars.VITE_APP_URL }}
+        run: |
+          node scripts/generate-backend-config.mjs
+          ls -la backend/
+
+      - name: Deploy SPA (dist/) via FTP
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          server-dir: ${{ secrets.FTP_SERVER_DIR }}
+          local-dir: ./dist/
+          protocol: ftps
+          port: 21
+          dangerous-clean-slate: false
+          exclude: |
+            **/.git*
+            **/.git*/**
+            **/node_modules/**
+            **/.DS_Store
+            **/.env*
+            **/api/**
+
+      - name: Deploy backend (backend/) via FTP
+        if: ${{ vars.VITE_AUTH_BACKEND == 'php' }}
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          server-dir: ${{ secrets.FTP_SERVER_DIR }}api/
+          local-dir: ./backend/
+          protocol: ftps
+          port: 21
+          dangerous-clean-slate: false
+          exclude: |
+            **/.git*
+            **/.git*/**
+            **/README.md
+            **/config.example.php
+            **/sql/**
+
+      - name: Summary
+        if: success()
+        run: |
+          echo "### ✅ Deploy completado" >> $GITHUB_STEP_SUMMARY
+          echo "- Commit: ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Backend: ${{ vars.VITE_AUTH_BACKEND || 'supabase' }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Actor:  ${{ github.actor }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Razón:  ${{ github.event.inputs.reason || 'push' }}" >> $GITHUB_STEP_SUMMARY
