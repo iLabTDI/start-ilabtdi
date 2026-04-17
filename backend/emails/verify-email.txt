@@ -1,0 +1,12 @@
+Hola {{name}},
+
+Gracias por unirte a {{app_name}}. Confirma que este correo es tuyo
+abriendo el siguiente enlace:
+
+{{action_url}}
+
+El enlace expira en 24 horas.
+
+¿No fuiste tú? Ignora este mensaje.
+
+— Equipo {{app_name}}

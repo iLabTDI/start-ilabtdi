@@ -1,0 +1,108 @@
+# ─────────────────────────────────────────────────────────────
+# Start-Ilabtdi · .htaccess para hosting Apache (GoDaddy cPanel)
+#
+# 1. Fuerza HTTPS con redirect 301
+# 2. Enrutamiento SPA (todas las rutas → /index.html)
+# 3. Headers de seguridad (CSP, HSTS, Frame-Options, etc.)
+# 4. Compresión gzip/deflate para assets
+# 5. Cache inmutable para assets con hash; no-cache para index.html
+# 6. Bloqueo de archivos sensibles (.env, .git, dotfiles)
+# ─────────────────────────────────────────────────────────────
+
+Options -Indexes -MultiViews
+ServerSignature Off
+
+# ─── 1. Forzar HTTPS ─────────────────────────────────────────
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteCond %{HTTPS} !=on
+  RewriteCond %{HTTP:X-Forwarded-Proto} !=https
+  RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [R=301,L]
+</IfModule>
+
+# ─── 2. SPA routing ──────────────────────────────────────────
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteBase /
+  # No reescribir assets reales
+  RewriteCond %{REQUEST_FILENAME} -f [OR]
+  RewriteCond %{REQUEST_FILENAME} -d
+  RewriteRule ^ - [L]
+  # Todo lo demás va a index.html
+  RewriteRule ^ index.html [L]
+</IfModule>
+
+# ─── 3. Headers de seguridad ─────────────────────────────────
+<IfModule mod_headers.c>
+  Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+  Header always set X-Frame-Options "DENY"
+  Header always set X-Content-Type-Options "nosniff"
+  Header always set Referrer-Policy "strict-origin-when-cross-origin"
+  Header always set Permissions-Policy "geolocation=(), microphone=(), camera=(), payment=(), usb=()"
+  Header always set Cross-Origin-Opener-Policy "same-origin"
+  Header always set Cross-Origin-Resource-Policy "same-origin"
+
+  # Content Security Policy
+  # style-src requiere 'unsafe-inline' por los inline styles que inyecta
+  # Radix UI / shadcn para posicionamiento dinámico.
+  Header always set Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https:; connect-src 'self' https://*.supabase.co wss://*.supabase.co; frame-ancestors 'none'; form-action 'self'; base-uri 'self'; object-src 'none'; upgrade-insecure-requests"
+
+  # Remover headers que filtran info de la stack
+  Header unset X-Powered-By
+  Header unset Server
+</IfModule>
+
+# ─── 4. Compresión ───────────────────────────────────────────
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE text/html text/plain text/xml text/css text/javascript
+  AddOutputFilterByType DEFLATE application/javascript application/json application/xml
+  AddOutputFilterByType DEFLATE application/x-javascript application/rss+xml
+  AddOutputFilterByType DEFLATE image/svg+xml font/ttf font/otf application/font-woff application/font-woff2
+</IfModule>
+
+# ─── 5. Cache headers ────────────────────────────────────────
+<IfModule mod_expires.c>
+  ExpiresActive On
+  ExpiresDefault "access plus 1 month"
+  # Assets con hash: cache inmutable por 1 año
+  <FilesMatch "\.(js|css|woff2?|ttf|otf|eot|svg|png|jpe?g|gif|webp|avif|ico)$">
+    ExpiresDefault "access plus 1 year"
+    Header set Cache-Control "public, max-age=31536000, immutable"
+  </FilesMatch>
+  # index.html: siempre fresco
+  <FilesMatch "^(index\.html|\.htaccess)$">
+    ExpiresActive Off
+    Header set Cache-Control "no-cache, no-store, must-revalidate"
+    Header set Pragma "no-cache"
+    Header set Expires "0"
+  </FilesMatch>
+</IfModule>
+
+# ─── 6. Bloqueo de archivos sensibles ────────────────────────
+<FilesMatch "^\.">
+  Require all denied
+</FilesMatch>
+
+<FilesMatch "\.(env|env\..*|git|gitignore|gitattributes|lock|log|sql|md|yml|yaml|toml|ini|config|bak|old|swp)$">
+  Require all denied
+</FilesMatch>
+
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteRule "(^|/)\.(?!well-known)" - [F,L]
+  RewriteRule "(^|/)(node_modules|src|\.git|\.github|supabase|docs)(/|$)" - [F,L]
+</IfModule>
+
+# ─── MIME types para fonts (algunos GoDaddy no los traen) ───
+<IfModule mod_mime.c>
+  AddType application/font-woff2 .woff2
+  AddType application/font-woff .woff
+  AddType font/ttf .ttf
+  AddType font/otf .otf
+  AddType image/svg+xml .svg
+</IfModule>
+
+# Evita que Apache sirva archivos de respaldo del editor
+<FilesMatch "(~|\.bak|\.swp|\.swo|\.tmp)$">
+  Require all denied
+</FilesMatch>

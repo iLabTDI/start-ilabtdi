@@ -1,0 +1,69 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Build output
+dist/
+dist-ssr/
+build/
+*.local
+
+# Env files
+.env
+.env.local
+.env.*.local
+.env.production
+
+# Credenciales del hosting (nunca subirlas)
+.credentials.txt
+backend/config.php
+
+# Correos generados por el stub mailer (contienen datos de usuarios)
+backend/logs/mail-*.html
+backend/logs/mail-*.eml
+
+# DBs locales embebidas
+*.sqlite
+*.sqlite3
+*.db
+
+# Editor
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Testing
+coverage/
+.vitest-cache/
+*.lcov
+
+# Cache
+.cache/
+.turbo/
+.parcel-cache/
+.eslintcache
+
+# Supabase
+.supabase/
+supabase/.branches/
+supabase/.temp/
+
+# Misc
+*.pem
+.vercel
+.netlify

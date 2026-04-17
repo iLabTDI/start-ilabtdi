@@ -1,0 +1,53 @@
+# ─────────────────────────────────────────────────────────────
+# Backend PHP · iLab TDI
+# Se despliega en /public_html/api/ del cPanel.
+# ─────────────────────────────────────────────────────────────
+
+Options -Indexes -MultiViews
+ServerSignature Off
+
+<IfModule mod_headers.c>
+  Header always set X-Content-Type-Options "nosniff"
+  Header always set X-Frame-Options "DENY"
+  Header always set Referrer-Policy "no-referrer"
+  Header always unset X-Powered-By
+  Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains"
+</IfModule>
+
+# Bloquear archivos sensibles
+<FilesMatch "^(config\.php|config\.example\.php|\.env.*|composer\..*|.*\.md|.*\.sql|.*\.log|.*\.bak)$">
+  Require all denied
+</FilesMatch>
+
+<FilesMatch "^\.">
+  Require all denied
+</FilesMatch>
+
+# Bloquear acceso directo a carpetas internas
+RedirectMatch 404 ^/api/lib/
+RedirectMatch 404 ^/api/sql/
+RedirectMatch 404 ^/api/vendor/
+RedirectMatch 404 ^/api/emails/
+RedirectMatch 404 ^/api/logs/
+
+# Routing — /api/login → /api/api/login.php
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteBase /api/
+
+  # Permitir assets reales y el index
+  RewriteCond %{REQUEST_FILENAME} -f [OR]
+  RewriteCond %{REQUEST_FILENAME} -d
+  RewriteRule ^ - [L]
+
+  # /login → api/login.php
+  RewriteRule ^login/?$                 api/login.php                 [L,QSA]
+  RewriteRule ^register/?$              api/register.php              [L,QSA]
+  RewriteRule ^me/?$                    api/me.php                    [L,QSA]
+  RewriteRule ^logout/?$                api/logout.php                [L,QSA]
+  RewriteRule ^verify-email/?$          api/verify-email.php          [L,QSA]
+  RewriteRule ^forgot-password/?$       api/forgot-password.php       [L,QSA]
+  RewriteRule ^reset-password/?$        api/reset-password.php        [L,QSA]
+  RewriteRule ^resend-verification/?$   api/resend-verification.php   [L,QSA]
+  RewriteRule ^health/?$                health.php                    [L,QSA]
+</IfModule>
