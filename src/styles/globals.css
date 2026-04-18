@@ -106,7 +106,10 @@
     outline: none;
   }
 
-  h1, h2, h3, h4 {
+  h1,
+  h2,
+  h3,
+  h4 {
     font-family: var(--font-display);
     font-feature-settings:
       'liga' 1,
@@ -128,21 +131,85 @@
   }
 
   @keyframes shake {
-    0%, 100% { transform: translateX(0); }
-    20% { transform: translateX(-4px); }
-    40% { transform: translateX(4px); }
-    60% { transform: translateX(-2px); }
-    80% { transform: translateX(2px); }
+    0%,
+    100% {
+      transform: translateX(0);
+    }
+    20% {
+      transform: translateX(-4px);
+    }
+    40% {
+      transform: translateX(4px);
+    }
+    60% {
+      transform: translateX(-2px);
+    }
+    80% {
+      transform: translateX(2px);
+    }
   }
   .animate-shake {
     animation: shake 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   @keyframes fade-in-up {
-    from { opacity: 0; transform: translateY(6px); }
-    to { opacity: 1; transform: translateY(0); }
+    from {
+      opacity: 0;
+      transform: translateY(6px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
   .animate-fade-in-up {
     animation: fade-in-up 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* Orbit lines que rotan lentamente — para backdrops de auth, logos animados */
+  @keyframes orbit-rotate {
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(360deg);
+    }
+  }
+  .animate-orbit-slow {
+    animation: orbit-rotate 40s linear infinite;
+  }
+  .animate-orbit-slower-reverse {
+    animation: orbit-rotate 90s linear infinite reverse;
+  }
+
+  /* Halo pulsante sutil — respira */
+  @keyframes halo-pulse {
+    0%,
+    100% {
+      opacity: 0.7;
+      transform: scale(1);
+    }
+    50% {
+      opacity: 1;
+      transform: scale(1.12);
+    }
+  }
+  .animate-halo {
+    animation: halo-pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+
+  /* Moving gradient border · aceternity-style · usa conic-gradient rotando */
+  @keyframes border-rotate {
+    to {
+      --border-angle: 360deg;
+    }
+  }
+  .animate-moving-border {
+    animation: border-rotate 6s linear infinite;
+  }
+  @property --border-angle {
+    syntax: '<angle>';
+    inherits: false;
+    initial-value: 0deg;
   }
 }

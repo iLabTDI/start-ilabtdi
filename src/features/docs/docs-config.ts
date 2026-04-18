@@ -12,6 +12,7 @@ import bootstrapMd from '@/features/docs/content/11-bootstrap.md?raw';
 import customizarMd from '@/features/docs/content/13-customizar.md?raw';
 import emailsMd from '@/features/docs/content/14-emails.md?raw';
 import subirGithubMd from '@/features/docs/content/15-subir-a-github.md?raw';
+import publicarPaqueteMd from '@/features/docs/content/16-publicar-paquete.md?raw';
 
 export interface DocSection {
   slug: string;
@@ -102,6 +103,12 @@ export const docGroups: DocGroup[] = [
         title: 'Subir a GitHub',
         summary: 'Paso a paso desde cero para publicar y activar el deploy.',
         content: subirGithubMd,
+      },
+      {
+        slug: 'publicar-paquete',
+        title: 'Publicar create-ilabtdi a npm',
+        summary: 'Para mantener el paquete npm que habilita `pnpm create ilabtdi`.',
+        content: publicarPaqueteMd,
       },
       {
         slug: 'deploy',

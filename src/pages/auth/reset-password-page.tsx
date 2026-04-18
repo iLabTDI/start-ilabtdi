@@ -4,9 +4,8 @@ import { ResetPasswordForm } from '@/features/auth/components/reset-password-for
 export function ResetPasswordPage() {
   return (
     <AuthLayout
-      title="Define tu nueva contraseña"
-      description="Una contraseña fuerte y estás listo para continuar."
-      asideCta="Contraseñas fuertes, cuentas seguras. Así trabajamos."
+      title="Nueva contraseña"
+      description="Elige una contraseña fuerte para proteger tu cuenta."
     >
       <ResetPasswordForm />
     </AuthLayout>

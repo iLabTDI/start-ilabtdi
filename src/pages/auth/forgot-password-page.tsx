@@ -4,9 +4,8 @@ import { ForgotPasswordForm } from '@/features/auth/components/forgot-password-f
 export function ForgotPasswordPage() {
   return (
     <AuthLayout
-      title="Recupera tu acceso"
-      description="Dinos tu correo y te mandamos un enlace seguro para crear una nueva contraseña."
-      asideCta="Nunca te quedes fuera. Un enlace, tu correo, de vuelta adentro."
+      title="Recuperar contraseña"
+      description="Te enviaremos un enlace para restablecerla."
     >
       <ForgotPasswordForm />
     </AuthLayout>

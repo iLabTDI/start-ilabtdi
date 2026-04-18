@@ -1,13 +1,18 @@
+import { useState } from 'react';
 import { Link } from 'react-router';
 import {
   FiArrowRight,
   FiShield,
   FiZap,
-  FiGitBranch,
   FiCode,
   FiLayers,
   FiCloud,
+  FiCopy,
+  FiCheck,
   FiCheckCircle,
+  FiTerminal,
+  FiGitBranch,
+  FiPackage,
 } from 'react-icons/fi';
 import { HiSparkles } from 'react-icons/hi';
 import {
@@ -32,11 +37,12 @@ export function HomePage() {
   const { isAuthenticated } = useSession();
 
   return (
-    <div className="flex min-h-screen flex-col bg-background">
+    <div className="bg-background flex min-h-screen flex-col">
       <PublicNav />
 
       <main className="flex-1">
         <Hero isAuthenticated={isAuthenticated} />
+        <CommandSection />
         <Features />
         <Stack />
         <Cta isAuthenticated={isAuthenticated} />
@@ -47,29 +53,51 @@ export function HomePage() {
   );
 }
 
+/* ═══════════════════════════════════════════════════════════════
+   HERO
+   ═══════════════════════════════════════════════════════════════ */
+
 function Hero({ isAuthenticated }: { isAuthenticated: boolean }) {
   return (
     <section className="relative overflow-hidden">
-      <div className="absolute inset-0 bg-gradient-to-b from-primary/5 via-background to-background" />
-      <div className="absolute left-1/2 top-0 -z-0 h-96 w-[40rem] -translate-x-1/2 rounded-full bg-primary/10 blur-[120px]" />
+      <DottedBackground />
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute top-0 left-1/2 h-[600px] w-[900px] -translate-x-1/2 opacity-70"
+        style={{
+          background:
+            'radial-gradient(ellipse at center, color-mix(in oklch, var(--color-primary) 14%, transparent), transparent 65%)',
+          filter: 'blur(60px)',
+        }}
+      />
 
-      <div className="relative mx-auto max-w-6xl px-4 pb-16 pt-16 sm:px-6 sm:pt-24 lg:px-8 lg:pb-24 lg:pt-28">
+      <div className="relative mx-auto max-w-6xl px-4 pt-14 pb-16 sm:px-6 sm:pt-20 lg:px-8 lg:pt-28 lg:pb-20">
         <div className="mx-auto max-w-3xl text-center">
-          <span className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/5 px-3 py-1 text-xs text-primary">
+          <span className="border-primary/25 bg-primary/5 text-primary inline-flex items-center gap-2 rounded-full border px-3 py-1 text-[11px] font-medium tracking-wider uppercase backdrop-blur">
             <HiSparkles className="h-3 w-3" />
-            Template oficial · {siteConfig.lab.name}
+            Template · {siteConfig.lab.name}
           </span>
-          <h1 className="mt-6 text-4xl font-semibold leading-[1.08] tracking-tight sm:text-5xl lg:text-6xl">
-            Login funcional <br className="hidden sm:inline" />
-            <span className="bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
-              en 5 minutos.
+
+          <h1 className="mt-6 text-[44px] leading-[0.98] font-semibold tracking-[-0.035em] sm:text-[60px] lg:text-[72px]">
+            Login funcional
+            <br />
+            <span className="relative inline-block">
+              <span className="from-primary via-primary/80 to-primary/40 bg-gradient-to-br bg-clip-text text-transparent">
+                en 5 minutos.
+              </span>
+              <span
+                aria-hidden="true"
+                className="via-primary/40 absolute -bottom-2 left-0 h-px w-full bg-gradient-to-r from-transparent to-transparent"
+              />
             </span>
           </h1>
-          <p className="mx-auto mt-5 max-w-2xl text-base text-muted-foreground sm:text-lg">
-            Plantilla oficial del lab. Auth, base de datos y deploy a GoDaddy
-            preconfigurados. Clona, pega dos keys, despliega.
+
+          <p className="text-muted-foreground mx-auto mt-6 max-w-xl text-[15px] leading-relaxed sm:text-base">
+            Plantilla oficial del lab. Auth, base de datos y deploy a GoDaddy preconfigurados. Un
+            comando, pega dos keys, despliega.
           </p>
-          <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
+
+          <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
             <Button asChild size="lg">
               <Link to="/docs/quickstart">
                 Empezar ahora
@@ -86,12 +114,33 @@ function Hero({ isAuthenticated }: { isAuthenticated: boolean }) {
               </Button>
             )}
           </div>
-          <p className="mt-6 text-xs text-muted-foreground">
-            MIT · sin tracking · sin vendor lock-in innecesario
+
+          <p className="text-muted-foreground/50 mt-5 font-mono text-[10px] tracking-widest uppercase">
+            MIT · sin tracking · sin vendor lock-in
           </p>
         </div>
+      </div>
+    </section>
+  );
+}
 
-        <div className="mx-auto mt-14 max-w-4xl lg:mt-16">
+/* ═══════════════════════════════════════════════════════════════
+   COMMAND SECTION · terminal dedicado · 1 sola vez en toda la landing
+   ═══════════════════════════════════════════════════════════════ */
+
+function CommandSection() {
+  return (
+    <section className="border-border/40 relative border-y py-16 sm:py-20">
+      <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
+        <div className="text-center">
+          <p className="text-primary text-[11px] font-medium tracking-[0.25em] uppercase">
+            · un comando
+          </p>
+          <h2 className="mt-3 text-[28px] leading-tight font-semibold tracking-[-0.02em] sm:text-[36px]">
+            Copia. Pega. Corre.
+          </h2>
+        </div>
+        <div className="mt-8">
           <QuickstartTerminal />
         </div>
       </div>
@@ -99,47 +148,118 @@ function Hero({ isAuthenticated }: { isAuthenticated: boolean }) {
   );
 }
 
+/* ═══════════════════════════════════════════════════════════════
+   TERMINAL · copy-to-clipboard
+   ═══════════════════════════════════════════════════════════════ */
+
 function QuickstartTerminal() {
   return (
-    <div className="relative rounded-2xl border border-border/60 bg-card/50 p-2 shadow-2xl shadow-primary/5 backdrop-blur">
-      <div className="overflow-hidden rounded-xl bg-background">
-        <div className="flex items-center gap-1.5 border-b border-border/40 bg-card/60 px-4 py-3">
-          <span className="h-2.5 w-2.5 rounded-full bg-destructive/60" />
-          <span className="h-2.5 w-2.5 rounded-full bg-amber-500/60" />
-          <span className="h-2.5 w-2.5 rounded-full bg-primary/60" />
-          <span className="ml-3 font-mono text-xs text-muted-foreground">
-            camino rápido · demo en 30s
-          </span>
+    <div className="relative">
+      {/* Glow debajo del terminal */}
+      <div
+        aria-hidden="true"
+        className="bg-primary/15 pointer-events-none absolute inset-x-10 top-1/3 bottom-0 rounded-full blur-3xl"
+      />
+
+      <div className="border-border/50 bg-card/60 relative rounded-2xl border p-1.5 shadow-[0_30px_80px_-20px_rgba(0,0,0,0.5)] backdrop-blur-xl">
+        <div className="bg-background overflow-hidden rounded-[14px]">
+          {/* Topbar */}
+          <div className="border-border/40 bg-card/60 flex items-center gap-1.5 border-b px-4 py-3">
+            <span className="bg-destructive/50 h-2.5 w-2.5 rounded-full" />
+            <span className="h-2.5 w-2.5 rounded-full bg-amber-500/50" />
+            <span className="bg-primary/50 h-2.5 w-2.5 rounded-full" />
+            <span className="text-muted-foreground/60 ml-3 flex items-center gap-1.5 font-mono text-[11px] tracking-widest uppercase">
+              <FiTerminal className="h-3 w-3" />
+              un comando · proyecto listo
+            </span>
+          </div>
+
+          <CopyableCommand command="pnpm create ilabtdi mi-proyecto" />
+
+          <pre className="text-muted-foreground overflow-x-auto px-5 pt-3 pb-6 font-mono text-xs leading-relaxed sm:text-sm">
+            <span className="text-muted-foreground/70">
+              # wizard interactivo · elige backend · pega keys (o luego)
+            </span>
+            {'\n'}
+            <span className="text-foreground/90 inline-flex items-center gap-1.5 font-medium">
+              <FiCheckCircle aria-hidden className="text-primary inline h-3.5 w-3.5" />
+              dev server · login funcional · ready
+            </span>
+          </pre>
         </div>
-        <pre className="overflow-x-auto p-6 font-mono text-xs leading-relaxed text-muted-foreground sm:text-sm">
-          <span className="text-primary">$</span> pnpm dlx degit ilabtdi/start-ilabtdi mi-proyecto
-          {'\n'}
-          <span className="text-primary">$</span> cd mi-proyecto && pnpm install
-          {'\n'}
-          <span className="text-primary">$</span> pnpm dev
-          {'\n\n'}
-          <span className="text-muted-foreground/70"># Entra con demo@ilabtdi.com / Demo2026!</span>
-          {'\n'}
-          <span className="inline-flex items-center gap-1.5 text-foreground">
-            <FiCheckCircle className="inline h-3.5 w-3.5 text-primary" />
-            VITE ready · localhost:5173 · login funcional
-          </span>
-        </pre>
       </div>
-      <div className="mt-3 px-2 pb-1 text-center text-xs text-muted-foreground">
-        ¿Prefieres Supabase real o MySQL del lab?{' '}
-        <Link to="/docs/quickstart" className="text-primary underline-offset-4 hover:underline">
+
+      <p className="text-muted-foreground mt-4 text-center text-xs">
+        Funciona con pnpm, npm y yarn ·{' '}
+        <Link
+          to="/docs/quickstart"
+          className="text-primary underline-offset-4 transition hover:underline"
+        >
           Ver los 3 caminos →
         </Link>
-      </div>
+      </p>
     </div>
   );
 }
+
+function CopyableCommand({ command }: { command: string }) {
+  const [copied, setCopied] = useState(false);
+
+  const copy = async () => {
+    try {
+      await navigator.clipboard.writeText(command);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    } catch {
+      /* noop */
+    }
+  };
+
+  return (
+    <div className="group border-border/30 bg-background/40 relative flex items-center gap-3 border-b px-5 py-5 sm:px-6">
+      <span className="text-primary font-mono text-sm select-none">$</span>
+      <code className="text-foreground flex-1 overflow-x-auto font-mono text-[15px] font-semibold whitespace-nowrap select-all sm:text-base">
+        {command}
+      </code>
+      <button
+        type="button"
+        onClick={() => {
+          void copy();
+        }}
+        className="border-border/60 bg-card/80 text-muted-foreground hover:border-primary/40 hover:text-foreground grid h-9 w-9 shrink-0 place-items-center rounded-full border transition active:scale-95"
+        aria-label="Copiar comando"
+      >
+        {copied ? <FiCheck className="text-primary h-4 w-4" /> : <FiCopy className="h-4 w-4" />}
+      </button>
+    </div>
+  );
+}
+
+function DottedBackground() {
+  return (
+    <div
+      aria-hidden="true"
+      className="text-foreground pointer-events-none absolute inset-0 opacity-[0.045]"
+      style={{
+        backgroundImage: 'radial-gradient(currentColor 1px, transparent 1px)',
+        backgroundSize: '28px 28px',
+        maskImage: 'linear-gradient(to bottom, black 0%, black 70%, transparent 100%)',
+        WebkitMaskImage: 'linear-gradient(to bottom, black 0%, black 70%, transparent 100%)',
+      }}
+    />
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   FEATURES · bento grid asimétrico
+   ═══════════════════════════════════════════════════════════════ */
 
 interface Feature {
   icon: IconType;
   title: string;
   description: string;
+  span?: string;
+  accent?: boolean;
 }
 
 const features: Feature[] = [
@@ -147,58 +267,61 @@ const features: Feature[] = [
     icon: FiShield,
     title: 'Seguridad por default',
     description:
-      'CSP, HSTS, RLS, rate limiting, validación con Zod y headers Apache ya configurados. Lista de verificación OWASP cubierta.',
+      'CSP, HSTS, RLS en Supabase, rate limiting cliente+servidor, validación Zod, password hashing con bcrypt. Checklist OWASP ya cubierto.',
+    span: 'md:col-span-2',
+    accent: true,
   },
   {
     icon: FiZap,
-    title: 'Auth en 10 minutos',
-    description:
-      'Supabase Auth completo: login, registro, recuperación, magic links, sesión persistente. Con protección contra enumeración.',
+    title: 'Auth en minutos',
+    description: 'Login, registro, reset, magic links. Supabase o MySQL propio.',
   },
   {
     icon: FiCloud,
     title: 'Deploy a GoDaddy',
     description:
-      'GitHub Actions listo que builda y sube a cPanel vía FTP/SFTP. Cache inmutable, gzip, SPA routing funcionando.',
+      'GitHub Actions que sube a cPanel con FTP/SFTP. `.htaccess` endurecido con cache inmutable y SPA routing.',
   },
   {
     icon: FiLayers,
     title: 'Arquitectura feature-first',
-    description:
-      'Estructura por dominio, no por tipo. Capas claras: pages delgadas, features autocontenidas, lib pura.',
+    description: 'Features autocontenidas · pages delgadas · lib pura. Sin spaghetti.',
+    span: 'md:col-span-2',
   },
   {
     icon: FiCode,
     title: 'TypeScript estricto',
-    description:
-      'Modo strict total + exactOptionalPropertyTypes + noUncheckedIndexedAccess. Zod comparte tipos con forms.',
+    description: 'strict + exactOptionalPropertyTypes + noUncheckedIndexedAccess.',
   },
   {
     icon: FiGitBranch,
-    title: 'DX cuidado',
-    description:
-      'Husky, commitlint, Prettier con plugin Tailwind, ESLint flat config, Dependabot y CodeQL desde el día 1.',
+    title: 'DX cuidada',
+    description: 'Husky, commitlint, Prettier con plugin Tailwind, ESLint flat config.',
+  },
+  {
+    icon: FiPackage,
+    title: 'Scripts mágicos',
+    description: '`pnpm bootstrap` configura todo en un wizard · `db:setup` aplica migraciones.',
   },
 ];
 
 function Features() {
   return (
-    <section id="features" className="relative scroll-mt-20 py-20 sm:py-24 lg:py-28">
+    <section
+      id="features"
+      className="border-border/40 relative scroll-mt-20 border-b py-20 sm:py-24 lg:py-28"
+    >
       <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-2xl text-center">
-          <p className="text-sm font-medium uppercase tracking-wider text-primary">
-            Características
+        <div className="mx-auto mb-14 max-w-2xl text-center">
+          <p className="text-primary text-[11px] font-medium tracking-[0.25em] uppercase">
+            · lo que trae incluido
           </p>
-          <h2 className="mt-3 text-3xl font-semibold tracking-tight sm:text-4xl">
-            Lo que te ahorras configurar
+          <h2 className="mt-3 text-[34px] leading-[1.05] font-semibold tracking-[-0.025em] sm:text-[44px]">
+            Todo lo que normalmente pierdes 3 días configurando.
           </h2>
-          <p className="mt-4 text-muted-foreground">
-            Cada pieza del template resuelve un dolor real del equipo, identificado
-            en una encuesta interna al lab.
-          </p>
         </div>
 
-        <div className="mt-14 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid auto-rows-fr gap-4 md:grid-cols-3 lg:gap-5">
           {features.map((f) => (
             <FeatureCard key={f.title} feature={f} />
           ))}
@@ -211,55 +334,84 @@ function Features() {
 function FeatureCard({ feature }: { feature: Feature }) {
   const Icon = feature.icon;
   return (
-    <article className="group relative overflow-hidden rounded-xl border border-border/60 bg-card/40 p-6 transition-colors hover:border-primary/40 hover:bg-card/70">
-      <div className="absolute inset-x-0 -top-px h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
-      <div className="mb-4 inline-flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary ring-1 ring-inset ring-primary/20">
-        <Icon className="h-5 w-5" />
+    <article
+      className={`group border-border/50 bg-card/40 hover:border-primary/40 hover:bg-card/70 relative overflow-hidden rounded-2xl border p-6 transition-all duration-300 ${feature.span ?? ''}`}
+    >
+      {/* Hover halo · top gradient line */}
+      <div
+        aria-hidden="true"
+        className="via-primary/50 pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+      />
+
+      {/* Accent background para la primera card */}
+      {feature.accent && (
+        <div
+          aria-hidden="true"
+          className="bg-primary/10 pointer-events-none absolute -top-20 -right-20 h-48 w-48 rounded-full blur-3xl"
+        />
+      )}
+
+      <div className="relative">
+        <div className="bg-primary/10 text-primary ring-primary/20 mb-5 inline-flex h-10 w-10 items-center justify-center rounded-xl ring-1 ring-inset">
+          <Icon className="h-[18px] w-[18px]" />
+        </div>
+
+        <h3 className="text-[17px] font-semibold tracking-tight">{feature.title}</h3>
+        <p className="text-muted-foreground mt-2 text-[14px] leading-relaxed">
+          {feature.description}
+        </p>
       </div>
-      <h3 className="text-lg font-semibold tracking-tight">{feature.title}</h3>
-      <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{feature.description}</p>
     </article>
   );
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   STACK · grid con glow
+   ═══════════════════════════════════════════════════════════════ */
 
 interface StackPiece {
   icon: IconType;
   name: string;
   tag: string;
+  color: string;
 }
 
 const stack: StackPiece[] = [
-  { icon: SiVite, name: 'Vite', tag: 'Build' },
-  { icon: SiReact, name: 'React 19', tag: 'UI' },
-  { icon: SiTypescript, name: 'TypeScript', tag: 'Types' },
-  { icon: SiTailwindcss, name: 'Tailwind v4', tag: 'Styles' },
-  { icon: SiSupabase, name: 'Supabase', tag: 'Auth + DB' },
-  { icon: SiReactquery, name: 'TanStack Query', tag: 'Data' },
-  { icon: SiReacthookform, name: 'RHF', tag: 'Forms' },
-  { icon: SiZod, name: 'Zod', tag: 'Validation' },
+  { icon: SiVite, name: 'Vite', tag: 'Build', color: '#646cff' },
+  { icon: SiReact, name: 'React 19', tag: 'UI', color: '#61dafb' },
+  { icon: SiTypescript, name: 'TypeScript', tag: 'Types', color: '#3178c6' },
+  { icon: SiTailwindcss, name: 'Tailwind v4', tag: 'Styles', color: '#06b6d4' },
+  { icon: SiSupabase, name: 'Supabase', tag: 'Auth + DB', color: '#3ecf8e' },
+  { icon: SiReactquery, name: 'TanStack Query', tag: 'Data', color: '#ff4154' },
+  { icon: SiReacthookform, name: 'React Hook Form', tag: 'Forms', color: '#ec5990' },
+  { icon: SiZod, name: 'Zod', tag: 'Validation', color: '#3068b7' },
 ];
 
 function Stack() {
   return (
-    <section id="stack" className="relative scroll-mt-20 border-y border-border/40 bg-card/30 py-20 sm:py-24">
+    <section
+      id="stack"
+      className="border-border/40 bg-card/20 relative scroll-mt-20 border-b py-20 sm:py-24"
+    >
       <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-        <div className="grid gap-12 lg:grid-cols-2 lg:items-center">
+        <div className="grid gap-10 lg:grid-cols-2 lg:items-center lg:gap-16">
           <div>
-            <p className="text-sm font-medium uppercase tracking-wider text-primary">Stack</p>
-            <h2 className="mt-3 text-3xl font-semibold tracking-tight sm:text-4xl">
-              Todo lo que necesitas, nada extra.
+            <p className="text-primary text-[11px] font-medium tracking-[0.25em] uppercase">
+              · stack oficial
+            </p>
+            <h2 className="mt-3 text-[34px] leading-[1.05] font-semibold tracking-[-0.025em] sm:text-[42px]">
+              Cada pieza, con un motivo.
             </h2>
-            <p className="mt-4 text-muted-foreground">
-              Seleccionado para minimizar dependencias y maximizar velocidad. Sin
-              meta-frameworks, sin runtime de Node en hosting compartido, sin
+            <p className="text-muted-foreground mt-4">
+              Stack minimal que maximiza velocidad. Sin meta-frameworks, sin Node en runtime, sin
               vendor lock-in extra.
             </p>
-            <p className="mt-3 text-sm text-muted-foreground">
-              Lo que NO está también es decisión:{' '}
-              <span className="text-foreground">Redux, Auth0, Axios, styled-components</span> — no
-              los necesitas para 95% de casos y añaden mantenimiento.
+            <p className="text-muted-foreground mt-4 text-sm">
+              Lo que <strong className="text-foreground">no está</strong> también es decisión:
+              Redux, Auth0, Axios, styled-components — no los necesitas para 95% de casos.
             </p>
-            <div className="mt-6">
+
+            <div className="mt-8">
               <Button asChild variant="outline">
                 <Link to="/docs/decisiones-tecnicas">
                   Ver decisiones técnicas
@@ -269,24 +421,10 @@ function Stack() {
             </div>
           </div>
 
-          <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-2 xl:grid-cols-3">
-            {stack.map((piece) => {
-              const Icon = piece.icon;
-              return (
-                <li
-                  key={piece.name}
-                  className="flex items-center gap-3 rounded-lg border border-border/60 bg-background/60 p-3 transition-colors hover:border-primary/40"
-                >
-                  <div className="grid h-10 w-10 place-items-center rounded-md bg-card text-foreground">
-                    <Icon className="h-5 w-5" />
-                  </div>
-                  <div className="min-w-0">
-                    <p className="truncate text-sm font-medium">{piece.name}</p>
-                    <p className="truncate text-xs text-muted-foreground">{piece.tag}</p>
-                  </div>
-                </li>
-              );
-            })}
+          <ul className="grid grid-cols-2 gap-3">
+            {stack.map((piece) => (
+              <StackItem key={piece.name} piece={piece} />
+            ))}
           </ul>
         </div>
       </div>
@@ -294,36 +432,99 @@ function Stack() {
   );
 }
 
+function StackItem({ piece }: { piece: StackPiece }) {
+  const Icon = piece.icon;
+  return (
+    <li
+      className="group border-border/50 bg-background/50 hover:border-primary/40 hover:bg-background/80 relative overflow-hidden rounded-xl border p-4 transition-all duration-300 hover:-translate-y-0.5"
+      style={{ ['--color' as string]: piece.color }}
+    >
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute -top-6 -right-6 h-20 w-20 rounded-full opacity-0 blur-2xl transition-opacity duration-300 group-hover:opacity-40"
+        style={{ background: piece.color }}
+      />
+
+      <div className="relative flex items-center gap-3">
+        <span
+          className="bg-card grid h-10 w-10 shrink-0 place-items-center rounded-lg transition-colors"
+          style={{ color: piece.color }}
+        >
+          <Icon className="h-5 w-5" />
+        </span>
+        <div className="min-w-0">
+          <p className="text-foreground truncate text-sm font-medium">{piece.name}</p>
+          <p className="text-muted-foreground/70 truncate text-[11px] tracking-wider uppercase">
+            {piece.tag}
+          </p>
+        </div>
+      </div>
+    </li>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   CTA final
+   ═══════════════════════════════════════════════════════════════ */
+
 function Cta({ isAuthenticated }: { isAuthenticated: boolean }) {
   return (
-    <section className="relative py-20 sm:py-24">
-      <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
-        <div className="relative overflow-hidden rounded-2xl border border-primary/20 bg-gradient-to-br from-primary/10 via-card to-card p-10 text-center shadow-lg shadow-primary/5 sm:p-14">
-          <div className="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-primary/15 blur-3xl" />
-          <h2 className="relative text-3xl font-semibold tracking-tight sm:text-4xl">
+    <section className="relative overflow-hidden py-20 sm:py-28">
+      <div
+        aria-hidden="true"
+        className="text-foreground pointer-events-none absolute inset-0 opacity-[0.04]"
+        style={{
+          backgroundImage:
+            'linear-gradient(to right, currentColor 1px, transparent 1px), linear-gradient(to bottom, currentColor 1px, transparent 1px)',
+          backgroundSize: '64px 64px',
+          maskImage: 'radial-gradient(ellipse 80% 70% at center, black 30%, transparent 90%)',
+          WebkitMaskImage: 'radial-gradient(ellipse 80% 70% at center, black 30%, transparent 90%)',
+        }}
+      />
+      <div
+        aria-hidden="true"
+        className="bg-primary/[0.06] pointer-events-none absolute top-1/2 left-1/2 h-[300px] w-[700px] -translate-x-1/2 -translate-y-1/2 rounded-full blur-[90px]"
+      />
+
+      <div className="relative mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
+        <div className="text-center">
+          <div className="mb-5 flex items-center justify-center gap-2">
+            <span aria-hidden="true" className="bg-foreground/25 h-px w-8" />
+            <span className="text-muted-foreground/70 font-mono text-[10px] tracking-[0.32em] uppercase">
+              Siguiente paso
+            </span>
+            <span aria-hidden="true" className="bg-foreground/25 h-px w-8" />
+          </div>
+
+          <h2 className="text-[40px] leading-[1] font-semibold tracking-[-0.03em] sm:text-[56px] lg:text-[64px]">
             ¿Listo para empezar?
           </h2>
-          <p className="relative mx-auto mt-4 max-w-xl text-muted-foreground">
-            Elige el camino que va con tu proyecto y ten login funcional en
-            minutos. No hay que leer todo antes — es literal copy-paste.
+
+          <p className="text-muted-foreground mx-auto mt-5 max-w-lg text-[15px] leading-relaxed sm:text-base">
+            Lee el quickstart en 3 minutos o prueba el demo sin configurar nada.
           </p>
-          <div className="relative mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
+
+          <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
             <Button asChild size="lg">
               <Link to="/docs/quickstart">
-                Ver quickstart (5 min)
+                Ver quickstart
                 <FiArrowRight className="h-4 w-4" />
               </Link>
             </Button>
-            {isAuthenticated ? (
+            <Button asChild variant="outline" size="lg">
+              <Link to="/docs">Explorar docs</Link>
+            </Button>
+            {!isAuthenticated && (
               <Button asChild variant="ghost" size="lg">
-                <Link to={APP_ROUTES.appHome}>Entrar al lab</Link>
-              </Button>
-            ) : (
-              <Button asChild variant="ghost" size="lg">
-                <Link to={AUTH_ROUTES.login}>Probar demo ahora</Link>
+                <Link to={AUTH_ROUTES.login}>Probar demo</Link>
               </Button>
             )}
           </div>
+        </div>
+
+        <div className="border-border/40 text-muted-foreground/50 mt-14 flex items-center justify-between border-t pt-6 font-mono text-[10px] tracking-[0.25em] uppercase">
+          <span>{siteConfig.lab.name}</span>
+          <span>01 / Ready</span>
         </div>
       </div>
     </section>

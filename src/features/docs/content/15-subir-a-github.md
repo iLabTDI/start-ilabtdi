@@ -37,28 +37,27 @@ gh repo create mi-proyecto --public --source=. --remote=origin --push
 
 ### Secrets (tab Secrets)
 
-| Nombre | Para qué |
-|---|---|
-| `FTP_SERVER` · `FTP_USERNAME` · `FTP_PASSWORD` · `FTP_SERVER_DIR` | Deploy a GoDaddy |
-| `VITE_SUPABASE_URL` · `VITE_SUPABASE_ANON_KEY` | Si usas Supabase |
-| `DB_HOST` · `DB_NAME` · `DB_USER` · `DB_PASS` · `JWT_SECRET` | Si usas MySQL (PHP) |
+| Nombre                                                            | Para qué            |
+| ----------------------------------------------------------------- | ------------------- |
+| `FTP_SERVER` · `FTP_USERNAME` · `FTP_PASSWORD` · `FTP_SERVER_DIR` | Deploy a GoDaddy    |
+| `VITE_SUPABASE_URL` · `VITE_SUPABASE_ANON_KEY`                    | Si usas Supabase    |
+| `DB_HOST` · `DB_NAME` · `DB_USER` · `DB_PASS` · `JWT_SECRET`      | Si usas MySQL (PHP) |
 
 ### Variables (tab Variables)
 
-| Nombre | Valor |
-|---|---|
-| `VITE_APP_NAME` | `Mi Proyecto` |
-| `VITE_APP_URL` | `https://mi-dominio.com` |
-| `VITE_AUTH_BACKEND` | `supabase` o `php` |
+| Nombre              | Valor                    |
+| ------------------- | ------------------------ |
+| `VITE_APP_NAME`     | `Mi Proyecto`            |
+| `VITE_APP_URL`      | `https://mi-dominio.com` |
+| `VITE_AUTH_BACKEND` | `supabase` o `php`       |
 
 **Atajo**: con `.credentials.txt` lleno y `gh` autenticado, `pnpm bootstrap` sube todos los secrets automático.
 
 ## Después del primer push
 
-1. **Actions → activa los workflows** si aparece el banner.
-2. Haz un commit vacío para probar el deploy: `git commit --allow-empty -m "ci: trigger" && git push`.
-3. Revisa los logs del job "Deploy · GoDaddy".
-4. Abre tu dominio — debe cargar.
+1. **Actions → habilita los workflows** si aparece el banner (solo la primera vez).
+2. Verifica que el workflow **CI** corrió y pasó (lint + typecheck + build).
+3. El workflow **Deploy · GoDaddy** viene **desactivado** (`.yml.disabled`) para que no intente deployar sin secrets. Cuando estés listo para activarlo, ver [Deploy a GoDaddy → Activar el workflow](/docs/deploy).
 
 ## Proteger `main` (recomendado para equipos)
 
@@ -69,11 +68,11 @@ Settings → Branches → Add rule → `main`:
 
 ## Troubleshooting rápido
 
-| Error | Solución |
-|---|---|
-| `FTP login failed` | Usuario FTP suele ser `user@tudominio.com` completo |
-| `VITE_SUPABASE_URL missing` | Falta el secret o está mal escrito |
-| Build falla por typecheck | Corre `pnpm typecheck` en local y arregla |
-| 404 en rutas profundas en prod | Verifica que `dist/.htaccess` se subió |
+| Error                          | Solución                                            |
+| ------------------------------ | --------------------------------------------------- |
+| `FTP login failed`             | Usuario FTP suele ser `user@tudominio.com` completo |
+| `VITE_SUPABASE_URL missing`    | Falta el secret o está mal escrito                  |
+| Build falla por typecheck      | Corre `pnpm typecheck` en local y arregla           |
+| 404 en rutas profundas en prod | Verifica que `dist/.htaccess` se subió              |
 
 Más detalles en [Deploy a GoDaddy](/docs/deploy).

@@ -1,0 +1,38 @@
+{
+  "name": "create-ilabtdi",
+  "version": "0.1.0",
+  "description": "Arrancador oficial de proyectos para el iLab TDI. Tipo `pnpm create vite`.",
+  "type": "module",
+  "bin": {
+    "create-ilabtdi": "./bin/index.mjs"
+  },
+  "files": [
+    "bin",
+    "README.md"
+  ],
+  "engines": {
+    "node": ">=20.11.0"
+  },
+  "keywords": [
+    "ilabtdi",
+    "template",
+    "create",
+    "scaffold",
+    "starter",
+    "react",
+    "vite",
+    "supabase",
+    "typescript"
+  ],
+  "author": "Yair Hernández <yairhdz107@gmail.com> (https://github.com/yairhdz24)",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/iLabTDI/start-ilabtdi.git",
+    "directory": "packages/create-ilabtdi"
+  },
+  "bugs": {
+    "url": "https://github.com/iLabTDI/start-ilabtdi/issues"
+  },
+  "homepage": "https://template.ilabtdi.com"
+}

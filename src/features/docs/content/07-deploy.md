@@ -1,5 +1,25 @@
 Este playbook cubre el deploy a **GoDaddy cPanel**, que es el default del lab. Si tu proyecto va a Vercel/Netlify/Railway, salta al final.
 
+> **ℹ️ El workflow viene desactivado por default.**
+>
+> El archivo `.github/workflows/deploy-godaddy.yml.disabled` existe como **plantilla lista**. GitHub ignora archivos que no terminan en `.yml`, así que no se ejecuta hasta que tú lo actives. De esta forma tu repo **no se intenta deployar** el primer día sin configuración.
+
+## Activar el workflow (cuando estés listo)
+
+```bash
+# 1. Quita la extensión .disabled para que GitHub lo reconozca
+mv .github/workflows/deploy-godaddy.yml.disabled .github/workflows/deploy-godaddy.yml
+
+# 2. Commitea el cambio
+git add .github/workflows/
+git commit -m "ci: activate deploy workflow"
+git push
+```
+
+El siguiente push a `main` lo dispara (o puedes correrlo manual desde Actions → Deploy · GoDaddy → Run workflow).
+
+> Si olvidaste configurar los secrets antes de activarlo, no pasa nada: el workflow tiene un `check-secrets` que detecta si falta `FTP_SERVER` y **skippea el deploy con un aviso amigable** en vez de fallar.
+
 ## Arquitectura
 
 ```
@@ -28,14 +48,14 @@ Anota:
 
 Repo → **Settings → Secrets and variables → Actions → New repository secret**:
 
-| Secret | Valor |
-|---|---|
-| `FTP_SERVER` | Host FTP de cPanel |
-| `FTP_USERNAME` | Usuario FTP dedicado |
-| `FTP_PASSWORD` | Contraseña del usuario |
-| `FTP_SERVER_DIR` | Ruta absoluta (`/public_html/`) |
-| `VITE_SUPABASE_URL` | URL del proyecto Supabase |
-| `VITE_SUPABASE_ANON_KEY` | anon key del proyecto |
+| Secret                   | Valor                           |
+| ------------------------ | ------------------------------- |
+| `FTP_SERVER`             | Host FTP de cPanel              |
+| `FTP_USERNAME`           | Usuario FTP dedicado            |
+| `FTP_PASSWORD`           | Contraseña del usuario          |
+| `FTP_SERVER_DIR`         | Ruta absoluta (`/public_html/`) |
+| `VITE_SUPABASE_URL`      | URL del proyecto Supabase       |
+| `VITE_SUPABASE_ANON_KEY` | anon key del proyecto           |
 
 Variables no secretas (tab **Variables**):
 
@@ -78,13 +98,13 @@ Si tu plan GoDaddy es Deluxe+ soporta SFTP:
 
 ## Troubleshooting
 
-| Síntoma | Causa probable | Fix |
-|---|---|---|
-| 404 en rutas profundas | `.htaccess` no se subió | Verifica en File Manager que exista `/public_html/.htaccess` |
-| Assets no cargan | `base` mal en Vite | Revisa `vite.config.ts` → por defecto `/` |
-| Login no funciona en prod | Redirect URL no registrada | Supabase → Auth → URL Configuration → agrega tu dominio |
-| Mixed content warnings | HTTPS no forzado | Revisa la regla `RewriteRule ^ https://...` en `.htaccess` |
-| Deploy timeout | FTP lento | Cambia a SFTP o sube el `timeout-minutes` |
+| Síntoma                   | Causa probable             | Fix                                                          |
+| ------------------------- | -------------------------- | ------------------------------------------------------------ |
+| 404 en rutas profundas    | `.htaccess` no se subió    | Verifica en File Manager que exista `/public_html/.htaccess` |
+| Assets no cargan          | `base` mal en Vite         | Revisa `vite.config.ts` → por defecto `/`                    |
+| Login no funciona en prod | Redirect URL no registrada | Supabase → Auth → URL Configuration → agrega tu dominio      |
+| Mixed content warnings    | HTTPS no forzado           | Revisa la regla `RewriteRule ^ https://...` en `.htaccess`   |
+| Deploy timeout            | FTP lento                  | Cambia a SFTP o sube el `timeout-minutes`                    |
 
 ## Otros destinos
 

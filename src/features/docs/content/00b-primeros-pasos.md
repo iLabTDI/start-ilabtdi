@@ -111,12 +111,20 @@ Arranca el **dev server** — un servidor local en `http://localhost:5173` con *
 
 Compila el proyecto a archivos estáticos (HTML + JS + CSS) dentro de `dist/` — listos para subir a un hosting.
 
-### `git clone` vs `pnpm dlx degit`
+### `pnpm create ilabtdi` para arrancar un proyecto nuevo
 
-- **`git clone`** copia el repo **con toda su historia de commits**. Útil si quieres contribuir al repo original.
-- **`pnpm dlx degit`** copia **solo los archivos actuales**, sin historia git. Útil para **empezar un proyecto nuevo basado en un template**.
+```bash
+pnpm create ilabtdi mi-proyecto
+```
 
-Para usar este template en un proyecto tuyo, usa `degit`. Para contribuir al template mismo, usa `git clone`.
+Descarga el template, instala dependencias y abre el wizard de configuración. Equivalente con otros gestores:
+
+```bash
+npm  create ilabtdi@latest mi-proyecto
+yarn create ilabtdi mi-proyecto
+```
+
+Para **contribuir al template oficial** (no arrancar un proyecto nuevo), clona el repo directo con `git clone`.
 
 ### Variables de entorno (`.env`)
 

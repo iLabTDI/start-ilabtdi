@@ -49,8 +49,38 @@ permissions:
   contents: read
 
 jobs:
+  # ─────────────────────────────────────────────────────────────
+  # Check previo — verifica si hay secrets configurados.
+  # Si no, el deploy se salta con un aviso amigable (NO falla).
+  # Esto permite clonar el template y pushear sin que GitHub mande
+  # emails de error al dueño del repo.
+  # ─────────────────────────────────────────────────────────────
+  check-secrets:
+    name: Verificar configuración
+    runs-on: ubuntu-latest
+    outputs:
+      configured: ${{ steps.check.outputs.configured }}
+    steps:
+      - id: check
+        env:
+          FTP_SERVER: ${{ secrets.FTP_SERVER }}
+        run: |
+          if [ -z "$FTP_SERVER" ]; then
+            echo "configured=false" >> $GITHUB_OUTPUT
+            echo "::notice title=Deploy saltado::Faltan secrets del repo (FTP_SERVER vacío). Configúralos en Settings → Secrets para activar el deploy automático."
+            echo "### ⏭ Deploy saltado" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "Faltan los secrets de FTP. Configúralos en **Repo → Settings → Secrets and variables → Actions** para que el próximo push active el deploy." >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "Ver guía: \`/docs/subir-a-github\` o corre \`pnpm bootstrap\` localmente para subirlos con \`gh\` CLI." >> $GITHUB_STEP_SUMMARY
+          else
+            echo "configured=true" >> $GITHUB_OUTPUT
+          fi
+
   deploy:
     name: Build & upload
+    needs: check-secrets
+    if: needs.check-secrets.outputs.configured == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     environment:

@@ -1,17 +1,48 @@
-> **TL;DR** — Elige uno de los 3 caminos, copia-pega comandos, tienes login funcional. El camino A es para ver cómo se ve; el B es el recomendado; el C si el proyecto vive 100% en el hosting del lab.
+> **TL;DR** — Un comando, wizard interactivo, proyecto listo. Elige backend en el wizard y te configura todo.
 
 ---
 
-## Camino A · Demo · 30 segundos
-
-**¿Quieres solo ver cómo se ve? No configures nada.**
+## El comando oficial
 
 ```bash
-pnpm dlx degit ilabtdi/start-ilabtdi mi-proyecto
+pnpm create ilabtdi mi-proyecto
+```
+
+**Equivalentes con otros gestores:**
+
+```bash
+npm  create ilabtdi@latest mi-proyecto
+yarn create ilabtdi mi-proyecto
+```
+
+## ¿Qué hace exactamente?
+
+1. **Clona el template** en una carpeta nueva (sin historia git).
+2. **Instala dependencias** con pnpm.
+3. Abre el **wizard interactivo** que te pregunta:
+   - Nombre y URL del proyecto
+   - Backend: Supabase · MySQL · Demo
+   - Credenciales (opcional, puedes llenarlas después)
+   - FTP del hosting (opcional)
+   - Secrets de GitHub (opcional, si tienes `gh`)
+4. Al final pregunta **¿es un proyecto nuevo?** — si dices Sí, elimina la docs del template para que quede solo el login.
+
+Cuando termina:
+
+```bash
 cd mi-proyecto
-pnpm install
 pnpm dev
 ```
+
+Y estás dentro.
+
+---
+
+## Los 3 backends (elegibles en el wizard)
+
+### Demo · 30 segundos
+
+Si solo quieres **ver cómo se ve**, elige **Solo demo** en el wizard. No configuras nada.
 
 Abre [localhost:5173](http://localhost:5173/login) y entra con:
 
@@ -19,126 +50,44 @@ Abre [localhost:5173](http://localhost:5173/login) y entra con:
 demo@ilabtdi.com  ·  Demo2026!
 ```
 
-Listo. Estás dentro. No hay backend, la sesión vive en tu navegador.
+No hay backend real · la sesión vive en tu navegador.
 
 ---
 
-## Camino B · Supabase real · 3 minutos
+### Supabase real · 3 minutos
 
 **El recomendado.** Auth + DB + Storage + realtime por 0 USD al mes (plan free).
 
-### 1. Clona
+1. En el wizard elige **⚡ Supabase**.
+2. En paralelo entra a [supabase.com/dashboard](https://supabase.com/dashboard) → **New project** (1 min).
+3. **Project Settings → API** → copia `Project URL` y `anon public` → pégalas en el wizard.
+4. Después: abre **SQL Editor** → pega `supabase/_setup.sql` → **Run**.
+5. `pnpm dev` → ve a `/register` → crea cuenta → confirma email → **login funcional**.
 
-```bash
-pnpm dlx degit ilabtdi/start-ilabtdi mi-proyecto
-cd mi-proyecto
-pnpm install
-pnpm scaffold           # quita las docs del template
-```
-
-### 2. Crea el proyecto Supabase
-
-Entra a [supabase.com/dashboard](https://supabase.com/dashboard) → **New project**. Espera ~1 min.
-
-### 3. Pega 2 valores
-
-**Project Settings → API** → copia `Project URL` y `anon public`. Pégalos en `.env`:
-
-```bash
-cp .env.example .env
-```
-
-```env
-VITE_SUPABASE_URL=https://xxxxxxxx.supabase.co
-VITE_SUPABASE_ANON_KEY=eyJhbGc...
-```
-
-### 4. Corre las migraciones
-
-Abre el **SQL Editor** de Supabase → pega el contenido de `supabase/_setup.sql` → **Run**.
-
-(O con la CLI: `supabase link --project-ref xxxx && pnpm db:push`)
-
-### 5. Arranca
-
-```bash
-pnpm dev
-```
-
-Ve a [localhost:5173/register](http://localhost:5173/register), crea tu cuenta, confirma el email, y ya tienes **login funcional con base de datos real**.
-
----
-
-## Camino C · MySQL en GoDaddy del lab · 10 minutos
+### MySQL en GoDaddy · 10 minutos
 
 **Cuando el cliente exige que todo viva en su hosting.**
 
-### 1. Clona + crea DB en cPanel
-
-```bash
-pnpm dlx degit ilabtdi/start-ilabtdi mi-proyecto
-cd mi-proyecto
-pnpm install
-```
-
-En cPanel → **MySQL Databases** → crea DB + user + asigna privilegios.
-
-### 2. Llena credenciales en un solo archivo
-
-```bash
-cp .credentials.example.txt .credentials.txt
-```
-
-Edita con valores reales:
-```
-AUTH_BACKEND=php
-DB_HOST=sgXXX.md.iad1.mysql
-DB_NAME=usuario_ilabtdi_app
-DB_USER=usuario_ilabtdi_app
-DB_PASS=xxx
-FTP_HOST=ftp.tudominio.com
-FTP_USER=deploy@tudominio.com
-FTP_PASS=xxx
-```
-
-### 3. Corre los scripts
-
-```bash
-pnpm bootstrap        # genera .env + backend/config.php + sube secrets al repo
-pnpm db:setup         # aplica migraciones MySQL al hosting
-pnpm scaffold         # limpia el template (docs fuera)
-```
-
-### 4. Crea un usuario admin
-
-```bash
-pnpm db:user create -e admin@tudominio.com -p "Admin@2026!" -n "Admin"
-```
-
-### 5. Arranca en local o despliega
-
-```bash
-pnpm dev              # local apuntando al MySQL remoto via /api
-# — o —
-git init && git add . && git commit -m "init"
-git push origin main  # el Action despliega a /public_html + /public_html/api
-```
+1. En cPanel → **MySQL Databases** → crea DB + user + asigna privilegios.
+2. En el wizard elige **🗄️ MySQL en GoDaddy** y pega las creds.
+3. `pnpm db:setup` → aplica migraciones al MySQL remoto.
+4. `pnpm db:user create -e admin@tudominio.com -p "Pass@2026!" -n "Admin"`.
+5. `pnpm dev` en local, o `git push` para deploy automático.
 
 Login en `https://tudominio.com/login` contra MySQL del lab.
 
 ---
 
-## ¿Cuál elijo?
+## ¿Cuál backend elijo?
 
-| Situación | Camino |
-|---|---|
-| "Solo quiero ver cómo se ve antes de decidir" | **A** (demo) |
-| "Proyecto nuevo, quiero lo más rápido y robusto" | **B** (Supabase) |
-| "El cliente paga el hosting GoDaddy, todo vive ahí" | **C** (MySQL) |
-| "No tengo claro qué quiere el cliente" | **B** — después puedes migrar |
-| "Migración de un WordPress viejo con MySQL existente" | **C** con tabla legada reusable |
+| Situación                                         | Backend                              |
+| ------------------------------------------------- | ------------------------------------ |
+| Solo quiero ver cómo se ve antes de decidir       | **Demo**                             |
+| Proyecto nuevo, quiero lo más rápido y robusto    | **Supabase**                         |
+| El cliente paga el hosting GoDaddy, todo vive ahí | **MySQL**                            |
+| No tengo claro qué quiere el cliente              | **Supabase** — después puedes migrar |
 
-> El **Camino B** (Supabase) se puede convertir en C después migrando los datos. El C hacia B también pero con más trabajo. **Si dudas, arranca en B.**
+> Supabase se puede convertir en MySQL después migrando los datos (y al revés, con más trabajo). **Si dudas, arranca en Supabase.**
 
 ---
 
@@ -159,12 +108,12 @@ Un proyecto con:
 
 ## ¿Algo no funcionó?
 
-| Error | Fix |
-|---|---|
-| `Variables de entorno inválidas` | Copia `.env.example` → `.env` y llena las keys |
-| Login redirecciona infinitamente | Activa "email confirmation" en Supabase o desactívalo para dev |
-| `Failed to fetch` en login | Verifica que `VITE_SUPABASE_URL` esté correcto y la DB tenga RLS configurada |
-| `CORS blocked` con backend PHP | Agrega tu URL al `allowed_origins` de `backend/config.php` |
-| Puerto 5173 ocupado | `pnpm dev --port 5174` (o el que quieras) |
+| Error                            | Fix                                                                          |
+| -------------------------------- | ---------------------------------------------------------------------------- |
+| `Variables de entorno inválidas` | Copia `.env.example` → `.env` y llena las keys                               |
+| Login redirecciona infinitamente | Activa "email confirmation" en Supabase o desactívalo para dev               |
+| `Failed to fetch` en login       | Verifica que `VITE_SUPABASE_URL` esté correcto y la DB tenga RLS configurada |
+| `CORS blocked` con backend PHP   | Agrega tu URL al `allowed_origins` de `backend/config.php`                   |
+| Puerto 5173 ocupado              | `pnpm dev --port 5174` (o el que quieras)                                    |
 
 Para más: ve a [Primeros pasos](/docs/primeros-pasos) o pregunta en el canal del lab.

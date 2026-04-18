@@ -52,30 +52,35 @@ Este template ataca ambos. Trae todo decidido, todo conectado, todo documentado.
 
 ## 🚀 Quickstart
 
-El camino rápido — **login funcional en 5 minutos**:
+**Un solo comando.** Te pregunta todo y deja el proyecto listo.
 
 ```bash
-# 1. Clona sin historia git (template limpio)
-pnpm dlx degit iLabTDI/start-ilabtdi mi-proyecto
+pnpm create ilabtdi mi-proyecto
+```
+
+Equivalentes con otros gestores:
+
+```bash
+npm  create ilabtdi@latest mi-proyecto
+yarn create ilabtdi mi-proyecto
+```
+
+Qué hace:
+
+1. Descarga el template en `./mi-proyecto/`
+2. `pnpm install`
+3. Abre el **wizard interactivo**: nombre, backend (Supabase / MySQL / Demo), keys, FTP, GitHub
+4. Genera `.env`, `backend/config.php` (si PHP) y sube secrets al repo
+5. (Opcional) Elimina la docs del template para que tu proyecto quede limpio
+
+Luego:
+
+```bash
 cd mi-proyecto
-pnpm install
-
-# 2. Wizard interactivo que configura TODO
-pnpm bootstrap
-# → te pregunta: nombre, backend (Supabase/MySQL/demo), keys, FTP, GitHub.
-# → genera .env, backend/config.php, y sube secrets al repo.
-
-# 3. Quita las docs del template (solo si arrancas un proyecto nuevo)
-pnpm scaffold
-
-# 4. Arranca
 pnpm dev
 ```
 
-Abre http://localhost:5173, regístrate, entra al dashboard. Listo.
-
-> **¿Quieres solo ver la UI sin configurar nada?**
-> Salta el `bootstrap` y entra con `demo@ilabtdi.com` / `Demo2026!`.
+Y estás dentro. Si elegiste modo demo, entra con `demo@ilabtdi.com` / `Demo2026!`.
 
 ---
 
@@ -86,6 +91,7 @@ Abre http://localhost:5173, regístrate, entra al dashboard. Listo.
 <td width="50%">
 
 ### 🎨 UI y experiencia
+
 - Landing pública + login / registro / reset password
 - Tema claro/oscuro con persistencia
 - Dark mode editorial con Tailwind v4
@@ -94,6 +100,7 @@ Abre http://localhost:5173, regístrate, entra al dashboard. Listo.
 - Iconos react-icons + Lucide
 
 ### 🔐 Auth completo
+
 - Supabase Auth (default, recomendado)
 - **O** backend PHP propio contra MySQL
 - Modo demo con cuentas hardcodeadas
@@ -105,6 +112,7 @@ Abre http://localhost:5173, regístrate, entra al dashboard. Listo.
 <td width="50%">
 
 ### 🚢 Deploy automático
+
 - GitHub Action que sube a cPanel
 - FTP/SFTP + .htaccess endurecido
 - Cache inmutable + compresión gzip
@@ -112,6 +120,7 @@ Abre http://localhost:5173, regístrate, entra al dashboard. Listo.
 - CodeQL + Dependabot + CI
 
 ### 🛡️ Seguridad por default
+
 - CSP + HSTS + X-Frame-Options
 - RLS activa en Supabase
 - Validación con Zod
@@ -120,6 +129,7 @@ Abre http://localhost:5173, regístrate, entra al dashboard. Listo.
 - Checklist OWASP cubierto
 
 ### 📧 Correos transaccionales
+
 - Confirmación de cuenta, reset, welcome
 - 3 drivers: stub (dev) · Resend · SMTP
 - Templates HTML dark-mode compatibles
@@ -132,20 +142,20 @@ Abre http://localhost:5173, regístrate, entra al dashboard. Listo.
 
 ## 🧰 Stack
 
-| Capa | Tecnología |
-|---|---|
-| **Build** | Vite 6 + plugin React SWC |
-| **UI** | React 19 + TypeScript 5.7 estricto |
-| **Estilos** | Tailwind v4 (plugin Vite nativo) + shadcn/ui |
-| **Routing** | React Router v7 (data router) |
-| **Data** | Supabase JS v2 + TanStack Query v5 |
-| **Backend alt** | PHP 8.1+ contra MySQL (opcional) |
-| **Forms** | React Hook Form + Zod |
-| **Iconos** | Lucide (UI) · react-icons (marketing) |
-| **Tests** | Vitest + Testing Library |
-| **Tooling** | pnpm · ESLint 9 · Prettier 3 · Husky 9 |
-| **CI/CD** | GitHub Actions · Dependabot · CodeQL |
-| **Deploy** | FTP/SFTP a GoDaddy cPanel |
+| Capa            | Tecnología                                   |
+| --------------- | -------------------------------------------- |
+| **Build**       | Vite 6 + plugin React SWC                    |
+| **UI**          | React 19 + TypeScript 5.7 estricto           |
+| **Estilos**     | Tailwind v4 (plugin Vite nativo) + shadcn/ui |
+| **Routing**     | React Router v7 (data router)                |
+| **Data**        | Supabase JS v2 + TanStack Query v5           |
+| **Backend alt** | PHP 8.1+ contra MySQL (opcional)             |
+| **Forms**       | React Hook Form + Zod                        |
+| **Iconos**      | Lucide (UI) · react-icons (marketing)        |
+| **Tests**       | Vitest + Testing Library                     |
+| **Tooling**     | pnpm · ESLint 9 · Prettier 3 · Husky 9       |
+| **CI/CD**       | GitHub Actions · Dependabot · CodeQL         |
+| **Deploy**      | FTP/SFTP a GoDaddy cPanel                    |
 
 > **¿Por qué sí / por qué no cada pieza?** Ver [`/docs/decisiones-tecnicas`](https://template.ilabtdi.com/docs/decisiones-tecnicas)
 
@@ -155,31 +165,31 @@ Abre http://localhost:5173, regístrate, entra al dashboard. Listo.
 
 ### Setup y desarrollo
 
-| Comando | Qué hace |
-|---|---|
-| `pnpm bootstrap` | **Wizard interactivo** — configura env, backend y secrets |
-| `pnpm scaffold` | Limpia las docs del template (al iniciar proyecto nuevo) |
-| `pnpm dev` | Dev server en `:5173` |
-| `pnpm build` | Typecheck + build de producción |
-| `pnpm preview` | Sirve el build en `:4173` |
+| Comando                        | Qué hace                                                       |
+| ------------------------------ | -------------------------------------------------------------- |
+| `pnpm create ilabtdi <nombre>` | **Crea un proyecto nuevo** — desde cualquier carpeta           |
+| `pnpm bootstrap`               | Wizard para (re)configurar env, backend y secrets del proyecto |
+| `pnpm dev`                     | Dev server en `:5173`                                          |
+| `pnpm build`                   | Typecheck + build de producción                                |
+| `pnpm preview`                 | Sirve el build en `:4173`                                      |
 
 ### Calidad
 
-| Comando | Qué hace |
-|---|---|
-| `pnpm lint` | ESLint con max-warnings 0 |
-| `pnpm typecheck` | `tsc --noEmit` |
-| `pnpm test` | Vitest run |
+| Comando           | Qué hace                                |
+| ----------------- | --------------------------------------- |
+| `pnpm lint`       | ESLint con max-warnings 0               |
+| `pnpm typecheck`  | `tsc --noEmit`                          |
+| `pnpm test`       | Vitest run                              |
 | `pnpm audit:prod` | Auditoría de seguridad (solo prod deps) |
 
 ### Base de datos
 
-| Comando | Qué hace |
-|---|---|
-| `pnpm db:push` | Aplica migraciones a Supabase enlazado |
-| `pnpm db:setup` | Aplica SQL al MySQL remoto (con SSH tunnel si aplica) |
-| `pnpm db:user create -e x@y.com -p Pass@1!` | Crea usuario con bcrypt |
-| `pnpm db:user list / reset / delete` | CRUD rápido de usuarios |
+| Comando                                     | Qué hace                                              |
+| ------------------------------------------- | ----------------------------------------------------- |
+| `pnpm db:push`                              | Aplica migraciones a Supabase enlazado                |
+| `pnpm db:setup`                             | Aplica SQL al MySQL remoto (con SSH tunnel si aplica) |
+| `pnpm db:user create -e x@y.com -p Pass@1!` | Crea usuario con bcrypt                               |
+| `pnpm db:user list / reset / delete`        | CRUD rápido de usuarios                               |
 
 ---
 
@@ -248,17 +258,17 @@ Toda la documentación vive en el deploy oficial del template — no se baja con
 
 👉 **[template.ilabtdi.com/docs](https://template.ilabtdi.com/docs)**
 
-| Guía | Para qué |
-|---|---|
-| [Login funcional en 5 min](https://template.ilabtdi.com/docs/quickstart) | Los 3 caminos para arrancar |
-| [Primeros pasos](https://template.ilabtdi.com/docs/primeros-pasos) | Para quien nunca ha usado Node/React |
-| [Decisiones técnicas](https://template.ilabtdi.com/docs/decisiones-tecnicas) | Por qué sí / por qué no cada pieza |
-| [Personalizar](https://template.ilabtdi.com/docs/customizar) | Logo, colores, fuente |
-| [MySQL en GoDaddy](https://template.ilabtdi.com/docs/mysql-godaddy) | Alternativa al Supabase |
-| [Correos transaccionales](https://template.ilabtdi.com/docs/emails) | Verify, reset, welcome |
-| [Subir a GitHub](https://template.ilabtdi.com/docs/subir-a-github) | Paso a paso desde cero |
-| [Deploy a GoDaddy](https://template.ilabtdi.com/docs/deploy) | GitHub Actions + FTP |
-| [Seguridad](https://template.ilabtdi.com/docs/seguridad) | Checklist pre-producción |
+| Guía                                                                         | Para qué                             |
+| ---------------------------------------------------------------------------- | ------------------------------------ |
+| [Login funcional en 5 min](https://template.ilabtdi.com/docs/quickstart)     | Los 3 caminos para arrancar          |
+| [Primeros pasos](https://template.ilabtdi.com/docs/primeros-pasos)           | Para quien nunca ha usado Node/React |
+| [Decisiones técnicas](https://template.ilabtdi.com/docs/decisiones-tecnicas) | Por qué sí / por qué no cada pieza   |
+| [Personalizar](https://template.ilabtdi.com/docs/customizar)                 | Logo, colores, fuente                |
+| [MySQL en GoDaddy](https://template.ilabtdi.com/docs/mysql-godaddy)          | Alternativa al Supabase              |
+| [Correos transaccionales](https://template.ilabtdi.com/docs/emails)          | Verify, reset, welcome               |
+| [Subir a GitHub](https://template.ilabtdi.com/docs/subir-a-github)           | Paso a paso desde cero               |
+| [Deploy a GoDaddy](https://template.ilabtdi.com/docs/deploy)                 | GitHub Actions + FTP                 |
+| [Seguridad](https://template.ilabtdi.com/docs/seguridad)                     | Checklist pre-producción             |
 
 ---
 
@@ -268,18 +278,21 @@ Toda la documentación vive en el deploy oficial del template — no se baja con
 <summary><b>¿Por qué no Next.js?</b></summary>
 
 Un SPA clásico sobre Vite es suficiente para el 90% de proyectos del lab, carga más rápido en hosting compartido (GoDaddy) y no requiere Node en runtime. Si necesitas SSR real, migras a Next — y ahí dejas de usar este template.
+
 </details>
 
 <details>
 <summary><b>¿Puedo usar esto para un proyecto comercial?</b></summary>
 
 Sí, licencia MIT. Úsalo para lo que quieras, modifícalo, revéndelo. Solo conserva la atribución al proyecto original.
+
 </details>
 
 <details>
 <summary><b>¿Puedo cambiar GoDaddy por Vercel/Netlify?</b></summary>
 
 Sí. El build es Vite estándar. Borra `deploy-godaddy.yml`, conecta el repo en Vercel, configura las mismas env vars. Cero cambios en el código.
+
 </details>
 
 <details>
@@ -288,24 +301,28 @@ Sí. El build es Vite estándar. Borra `deploy-godaddy.yml`, conecta el repo en 
 **Supabase** por default — más rápido, auth + storage + realtime incluidos, escala mejor.
 
 **MySQL del hosting** cuando el cliente exige que todo viva en su GoDaddy, o por razones de compliance/contrato. Ambos caminos están implementados.
+
 </details>
 
 <details>
 <summary><b>¿Cómo agrego un nuevo feature?</b></summary>
 
 Crea `src/features/mi-feature/` con subcarpetas (`components/`, `hooks/`, `services/`, `schemas/`). La arquitectura es feature-based.
+
 </details>
 
 <details>
 <summary><b>Perdí el .env — ¿qué hago?</b></summary>
 
 Corre `pnpm bootstrap` de nuevo y lo regeneras. Si tienes `.credentials.txt` lleno, pasa `--non-interactive` y lo vuelve a generar sin preguntar.
+
 </details>
 
 <details>
 <summary><b>¿Qué hago si Supabase me pone rate-limit?</b></summary>
 
 Los límites de `supabase/config.toml` son para desarrollo local. En producción los manejas en Dashboard → Auth → Rate Limits.
+
 </details>
 
 ---
