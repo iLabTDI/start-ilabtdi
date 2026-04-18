@@ -1,125 +1,112 @@
-Publicación automática del paquete `create-ilabtdi` a npm mediante GitHub Actions. Cero comandos manuales.
+El paquete `create-ilabtdi` lo publica manualmente su autor desde su terminal. No hay automatización — simple, seguro, controlado.
 
 ---
 
-## Cómo funciona
+## Flujo de publicación
 
-El workflow `.github/workflows/publish-npm.yml` se dispara cada vez que pusheas cambios en `packages/create-ilabtdi/` a `main`.
-
-Decide solo qué hacer:
-
-- **La versión local ≠ publicada** → publica directo (tú bumpeaste manualmente en `package.json`).
-- **La versión local = publicada** → bumpea `patch` automáticamente, commitea el bump, publica.
-
-Después de eso, cualquiera puede correr:
-
-```bash
-pnpm create ilabtdi@latest mi-proyecto
-```
-
-Y recibe la última versión.
-
----
-
-## Setup · una sola vez
-
-### 1. Crear NPM_TOKEN con bypass 2FA
-
-1. Ve a [npmjs.com/settings/~/tokens](https://www.npmjs.com/settings/~/tokens).
-2. **Generate New Token → Granular Access Token**.
-3. Configúralo así:
-   - **Name**: `github-actions-create-ilabtdi`
-   - **Expiration**: 90 días (o más, según preferencia).
-   - **Allow 2FA bypass**: marca esta casilla — esencial para que el Action funcione sin OTP.
-   - **Packages and scopes**: selecciona `Only select packages` → `create-ilabtdi`.
-   - **Permissions**: **Read and write**.
-4. Copia el token (empieza con `npm_...`).
-
-### 2. Guardarlo en GitHub
-
-En tu repo:
-
-**Settings → Secrets and variables → Actions → New repository secret**
-
-- **Name**: `NPM_TOKEN`
-- **Value**: el token que acabas de copiar
-
-Listo. El workflow ya puede publicar.
-
----
-
-## Flujo de trabajo diario
-
-```bash
-# 1. Cambias algo en packages/create-ilabtdi/
-vim packages/create-ilabtdi/bin/index.mjs
-
-# 2. Commit y push
-git add packages/create-ilabtdi
-git commit -m "feat(create-ilabtdi): algo nuevo"
-git push
-```
-
-Después del push, ve al tab **Actions** del repo. Verás el workflow **Publish · create-ilabtdi** ejecutándose. En ~1 min:
-
-- Detecta si la versión local ya existe en npm
-- Si sí, bumpea `patch` (0.2.0 → 0.2.1) automático
-- Publica con tu `NPM_TOKEN`
-- Si hubo bump, commitea el nuevo `package.json` al repo
-
----
-
-## Controlar qué tipo de bump (major / minor / patch)
-
-El auto-bump por default es `patch`. Si quieres un `minor` o `major`, **bumpea manualmente antes de pushear**:
+Cada vez que haya cambios en `packages/create-ilabtdi/` (típicamente en `bin/index.mjs`):
 
 ```bash
 cd packages/create-ilabtdi
 
-# Para minor (0.2.0 → 0.3.0)
-npm version minor --no-git-tag-version
-# Para major (0.2.0 → 1.0.0)
-npm version major --no-git-tag-version
+# 1. Bump de versión
+npm version patch       # bugfix · 0.2.0 → 0.2.1
+# o
+npm version minor       # nueva feature · 0.2.0 → 0.3.0
+# o
+npm version major       # breaking change · 0.2.0 → 1.0.0
 
+# 2. Publica
+npm publish --access public
+# → npm te pedirá el OTP (6 dígitos de tu app autenticadora)
+
+# 3. Push del bump al repo
 cd ../..
-git add packages/create-ilabtdi/package.json
-git commit -m "feat(create-ilabtdi): bump major"
-git push
+git push && git push --tags
 ```
 
-El workflow detecta que la versión local ≠ publicada y publica directo esa versión sin hacer bump extra.
+Listo. En ~30 segundos la nueva versión está disponible en npm.
 
 ---
 
-## Verificación
+## Primera vez · setup npm
 
-Después de que el workflow termine:
+Si nunca has publicado paquetes:
+
+```bash
+npm login
+# → usuario + password + email + OTP
+```
+
+Tu credencial queda guardada en `~/.npmrc`. No necesitas volver a hacer login cada vez — solo te pide OTP cuando publicas (si tienes 2FA activado).
+
+---
+
+## Cambios en el template (sin republicar)
+
+**Importante**: si cambias **solo el template** (archivos fuera de `packages/create-ilabtdi/`), **NO necesitas publicar**.
+
+El paquete `create-ilabtdi` solo contiene el **binario** que hace `git clone` del repo. Cada vez que alguien corre `pnpm create ilabtdi`, descarga la última versión del branch `main`.
+
+Entonces:
+
+| Cambio                                  | ¿Requiere publish?                     |
+| --------------------------------------- | -------------------------------------- |
+| Diseño, landing, login, features, docs  | **NO** — se propaga con `git push`     |
+| `packages/create-ilabtdi/bin/index.mjs` | **SÍ** — `npm version` + `npm publish` |
+| `packages/create-ilabtdi/package.json`  | **SÍ**                                 |
+| `packages/create-ilabtdi/README.md`     | Opcional (cosmético en npm)            |
+
+---
+
+## Verificación después de publicar
 
 ```bash
 npm view create-ilabtdi version
-# → debe mostrar la versión nueva
 ```
 
-O entra a [npmjs.com/package/create-ilabtdi](https://www.npmjs.com/package/create-ilabtdi).
+O en browser: [npmjs.com/package/create-ilabtdi](https://www.npmjs.com/package/create-ilabtdi).
+
+Prueba rápida:
+
+```bash
+cd ~/Desktop
+pnpm create ilabtdi@latest probando-nueva-version
+```
+
+---
+
+## Unpublishing (si te equivocas)
+
+Solo disponible dentro de las **primeras 72 horas**. Después está bloqueado.
+
+```bash
+npm unpublish create-ilabtdi@0.2.1
+```
+
+Para "deprecar" una versión vieja (sin borrarla):
+
+```bash
+npm deprecate create-ilabtdi@0.1.0 "Usar 0.2.0+"
+```
 
 ---
 
 ## Troubleshooting
 
-| Error                                        | Solución                                                                          |
-| -------------------------------------------- | --------------------------------------------------------------------------------- |
-| Workflow dice "Falta NPM_TOKEN"              | Agrégalo en Settings → Secrets como se indicó arriba                              |
-| `403 Forbidden · 2FA required`               | El token no tiene **"Allow 2FA bypass"** marcado · genera uno nuevo               |
-| `403 · Cannot publish over existing version` | Alguien ya publicó esa versión · pushea otro commit para que haga bump automático |
-| `E404 · Cannot read …`                       | El token perdió permisos o caducó · regenera                                      |
-| El workflow no se dispara                    | Verifica que los cambios sean en `packages/create-ilabtdi/**` (path filter)       |
+| Error                                        | Fix                                                       |
+| -------------------------------------------- | --------------------------------------------------------- |
+| `402 Payment Required`                       | Para scoped packages sin `--access public`. Usa el flag.  |
+| `403 · Cannot publish over existing version` | Esa versión ya existe · corre `npm version patch` primero |
+| `E401 · Unauthorized`                        | Corre `npm login` de nuevo                                |
+| `403 · 2FA required`                         | Pasa `--otp=123456` con el código actual de tu app        |
+| Cambios no aparecen en `pnpm create`         | Limpia cache: `pnpm store prune`                          |
 
 ---
 
-## Rotar el token
+## Notas de propiedad
 
-Cada 90 días (o el período que hayas elegido):
-
-1. Genera nuevo token en npm (mismos settings).
-2. Actualiza el secret `NPM_TOKEN` en GitHub (Settings → Secrets → Update).
-3. Listo · no necesitas re-publicar nada.
+- El paquete está publicado bajo la cuenta personal del autor (**[yairhdz24](https://github.com/yairhdz24)**).
+- Solo el autor puede publicar nuevas versiones.
+- El repo del template puede vivir en la organización del lab, pero el **binario en npm es propiedad del autor**.
+- Si en el futuro se requiere transferir el paquete a una org de npm, consultar [docs.npmjs.com/transferring-a-package](https://docs.npmjs.com/transferring-a-package-from-a-user-account-to-another-user-account).
