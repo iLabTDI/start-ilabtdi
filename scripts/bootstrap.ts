@@ -73,30 +73,6 @@ async function main(): Promise<void> {
     uploadGithubSecrets(answers);
   }
 
-  // ¿Es un proyecto nuevo? → scaffold (eliminar docs del template)
-  if (!NON_INTERACTIVE) {
-    const scaffoldPath = resolve(ROOT, 'scripts/scaffold.ts');
-    if (existsSync(scaffoldPath)) {
-      console.log();
-      section('🧹 ¿Proyecto nuevo?');
-      const cleanDocs = await confirmP({
-        message:
-          '¿Eliminar la documentación del template? (sí = proyecto nuevo · no = estás contribuyendo al template oficial)',
-        default: true,
-      });
-      if (cleanDocs) {
-        log('info', 'Corriendo pnpm scaffold…');
-        const r = spawnSync('pnpm', ['scaffold', '--force'], {
-          stdio: 'inherit',
-          cwd: ROOT,
-        });
-        if (r.status !== 0) {
-          log('warn', 'scaffold falló · puedes correrlo manualmente con `pnpm scaffold`');
-        }
-      }
-    }
-  }
-
   printDone(answers);
 }
 

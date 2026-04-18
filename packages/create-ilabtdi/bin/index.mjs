@@ -216,22 +216,43 @@ async function main() {
     }
   }
 
-  /* 7. Fin */
+  /* 7. Scaffold automático · elimina la documentación del template */
+  if (!flags.skipInstall) {
+    log.info('Limpiando documentación del template…');
+    const scaffoldResult = spawnSync('pnpm', ['scaffold', '--force'], { stdio: 'pipe' });
+    if (scaffoldResult.status === 0) {
+      log.ok('Docs eliminadas · proyecto limpio.');
+    } else {
+      log.warn('No se pudo limpiar · corre `pnpm scaffold` manualmente.');
+    }
+  }
+
+  /* 8. Fin · mensaje final bonito */
+  printDone(name, targetDir, flags.skipInstall);
+}
+
+function printDone(name, targetDir, skipInstall) {
   console.log();
   console.log(`  ${c('green', '╭──────────────────────────────────────────────────╮')}`);
-  console.log(`  ${c('green', '│')}  ${c('bold', '🎉 ¡Proyecto creado!')}${' '.repeat(29)}${c('green', '│')}`);
+  console.log(`  ${c('green', '│')}  ${c('bold', '🎉 ¡Tu proyecto está listo!')}${' '.repeat(22)}${c('green', '│')}`);
   console.log(`  ${c('green', '╰──────────────────────────────────────────────────╯')}\n`);
 
-  console.log(`  ${c('gray', 'Tu proyecto está en:')}`);
+  console.log(`  ${c('gray', 'Ubicación:')}`);
   console.log(`  ${c('cyan', targetDir)}\n`);
 
   console.log(`  ${c('bold', '🚀 Siguientes pasos:')}\n`);
-  console.log(`    ${c('cyan', 'cd')} ${name}`);
-  if (flags.skipInstall) {
-    console.log(`    ${c('cyan', 'pnpm install')}`);
-    console.log(`    ${c('cyan', 'pnpm bootstrap')}`);
+  console.log(`    ${c('cyan', '$')} cd ${c('bold', name)}`);
+  if (skipInstall) {
+    console.log(`    ${c('cyan', '$')} pnpm install`);
+    console.log(`    ${c('cyan', '$')} pnpm bootstrap`);
   }
-  console.log(`    ${c('cyan', 'pnpm dev')}\n`);
+  console.log(`    ${c('cyan', '$')} pnpm dev`);
+
+  console.log();
+  console.log(`  ${c('gray', '────────────────────────────────────────────────────')}`);
+  console.log(`  ${c('gray', 'Edita')} ${c('bold', 'src/config/brand.ts')} ${c('gray', 'para personalizar tu proyecto.')}`);
+  console.log(`  ${c('gray', 'Docs del template:')} ${c('cyan', 'template.ilabtdi.com')}`);
+  console.log();
 }
 
 main().catch((err) => {
