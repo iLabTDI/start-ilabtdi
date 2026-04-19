@@ -1,0 +1,29 @@
+# Configuración de deploy a Netlify.
+# Netlify lee este archivo antes de empezar a buildear — todo lo que pongas
+# aquí pisa lo que esté en el dashboard.
+
+[build]
+  # pnpm viene vía corepack · activamos la versión que pide packageManager
+  command = "corepack enable && corepack prepare pnpm@10.33.0 --activate && pnpm install --frozen-lockfile=false && pnpm build"
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "22"
+  # Evita el bug de verificación de firmas de corepack en Node 20.x
+  COREPACK_INTEGRITY_KEYS = "0"
+  # Silencia prompts de pnpm
+  CI = "true"
+
+# SPA · todas las rutas caen en index.html (React Router las resuelve en cliente)
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+# Headers útiles (HSTS, content-type sniffing off, etc.)
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Content-Type-Options = "nosniff"
+    X-Frame-Options = "DENY"
+    Referer-Policy = "strict-origin-when-cross-origin"
