@@ -5,19 +5,16 @@
  *   pnpm scaffold               # interactivo
  *   pnpm scaffold --force       # sin confirmación
  *   pnpm scaffold --dry-run     # muestra qué haría sin tocar nada
- *   pnpm scaffold --keep-md     # conserva la carpeta docs/ del repo
  *
  * Qué hace:
- *   1. Elimina la sección de documentación dentro de la app:
- *        - src/features/docs/
- *        - src/pages/docs-page.tsx
- *        - rutas /docs en src/app/router.tsx
- *        - referencias en nav/footer/home
- *   2. Desinstala deps que ya no se usan: react-markdown, remark-gfm, rehype-slug.
- *   3. Borra docs/ en el repo (a menos que pases --keep-md).
- *   4. Se auto-elimina — el script no queda en el proyecto final.
+ *   1. Elimina la sección de documentación del template (docs públicas).
+ *   2. Elimina la carpeta `packages/` · solo sirve para publicar a npm.
+ *   3. Elimina los scripts del template que ya cumplieron (bootstrap, scaffold).
+ *   4. Si el backend elegido NO es PHP, elimina `backend/` y scripts de DB.
+ *   5. Limpia imports y entradas del router, nav y footer que hacían referencia.
+ *   6. Se auto-elimina.
  *
- * Idempotente: correrlo dos veces no rompe nada (los cambios ya aplicados se saltan).
+ * Idempotente: correrlo dos veces no rompe nada.
  */
 
 import { existsSync, readFileSync, rmSync, writeFileSync, unlinkSync } from 'node:fs';
@@ -30,12 +27,24 @@ import { log, ROOT } from './_shared.js';
 const args = new Set(process.argv.slice(2));
 const DRY = args.has('--dry-run');
 const FORCE = args.has('--force') || args.has('-f');
-const KEEP_MD = args.has('--keep-md');
 
-const DOC_DIRS = ['src/features/docs'];
-const DOC_FILES = ['src/pages/docs-page.tsx'];
-const DOCS_ROOT = 'docs';
 const DEPS_TO_REMOVE = ['react-markdown', 'remark-gfm', 'rehype-slug'];
+
+/* ─── Detecta el backend elegido leyendo .env ─── */
+
+function detectBackend(): 'supabase' | 'php' | 'demo' {
+  const envPath = resolve(ROOT, '.env');
+  if (!existsSync(envPath)) return 'supabase';
+  const raw = readFileSync(envPath, 'utf8');
+  const match = raw.match(/^VITE_AUTH_BACKEND=(\w+)$/m);
+  const value = match?.[1]?.trim();
+  if (value === 'php' || value === 'demo') return value;
+  return 'supabase';
+}
+
+const BACKEND = detectBackend();
+
+/* ─── Mutaciones: limpiar referencias a docs en archivos que quedan ─── */
 
 interface Mutation {
   file: string;
@@ -45,16 +54,16 @@ interface Mutation {
 
 const MUTATIONS: Mutation[] = [
   {
-    file: 'src/app/router.tsx',
-    description: 'quitar rutas /docs del router',
+    file: 'src/router.tsx',
+    description: 'quitar rutas /docs',
     mutate: (c) =>
       c
         .replace(
-          /import\s+\{\s*DocsPage,\s*DocsIndexRedirect\s*\}\s+from\s+'@\/pages\/docs-page';\s*\n/,
+          /import\s+\{\s*Docs,\s*DocsIndexRedirect\s*\}\s+from\s+'@\/pages\/docs\/docs';\s*\n/,
           ''
         )
         .replace(
-          /\s*\/\/ Documentación[\s\S]*?\{ path: 'docs\/:slug', element: <DocsPage \/> \},\s*/,
+          /\s*\/\/ Documentación[\s\S]*?\{ path: 'docs\/:slug', element: <Docs \/> \},\s*/,
           '\n'
         ),
   },
@@ -63,15 +72,12 @@ const MUTATIONS: Mutation[] = [
     description: 'quitar item "Documentación" del sidebar',
     mutate: (c) =>
       c
-        // 1) elimina primero el NavItem que usa el icon BookOpen
         .replace(
           /\s*\{\s*label:\s*'Documentación',\s*href:\s*APP_ROUTES\.docs,\s*icon:\s*BookOpen\s*\},\s*/,
           '\n      '
         )
-        // 2) luego saca BookOpen del import (maneja coma antes o después)
         .replace(/\bBookOpen\s*,\s*/g, '')
         .replace(/,\s*BookOpen\b/g, '')
-        // 3) entrada del breadcrumb
         .replace(/\s*docs:\s*'Documentación',\s*/g, '\n  '),
   },
   {
@@ -80,21 +86,18 @@ const MUTATIONS: Mutation[] = [
     mutate: (c) => c.replace(/\s*docs:\s*'\/docs',\s*/g, '\n  '),
   },
   {
-    file: 'src/components/layout/public-nav.tsx',
+    file: 'src/components/public-nav.tsx',
     description: 'quitar link "Documentación" del nav público',
     mutate: (c) => c.replace(/\s*\{\s*label:\s*'Documentación',\s*to:\s*'\/docs'\s*\},?\s*/, '\n'),
   },
   {
-    file: 'src/components/layout/public-footer.tsx',
+    file: 'src/components/public-footer.tsx',
     description: 'quitar columna "Recursos" del footer',
-    mutate: (c) => {
-      // Elimina el bloque completo <div>…Recursos…</ul></div>
-      const regex = /\s*<div>\s*<p[^>]*>\s*Recursos[\s\S]*?<\/ul>\s*<\/div>\s*/;
-      return c.replace(regex, '\n        ');
-    },
+    mutate: (c) =>
+      c.replace(/\s*<div>\s*<p[^>]*>\s*Recursos[\s\S]*?<\/ul>\s*<\/div>\s*/, '\n        '),
   },
   {
-    file: 'src/pages/app-home-page.tsx',
+    file: 'src/pages/home/app-home.tsx',
     description: 'quitar shortcut "Documentación" del home interno',
     mutate: (c) =>
       c
@@ -103,14 +106,13 @@ const MUTATIONS: Mutation[] = [
           '\n  '
         )
         .replace(/,?\s*FiBookOpen\s*,?/, '')
-        // eliminar la mención en el párrafo de bienvenida si quedó link a /docs
         .replace(
           /pasa por la\s*<Link[^>]*to=\{APP_ROUTES\.docs\}[^>]*>[^<]*<\/Link>[\s\S]*?—\s*te\s+ahorrará[\s\S]*?\./,
           'revisa la estructura del proyecto — te ahorrará tiempo en decisiones que ya están tomadas.'
         ),
   },
   {
-    file: 'src/pages/home-page.tsx',
+    file: 'src/pages/home/public-home.tsx',
     description: 'quitar botón "Ver decisiones técnicas" de la landing',
     mutate: (c) =>
       c.replace(
@@ -120,8 +122,10 @@ const MUTATIONS: Mutation[] = [
   },
 ];
 
+/* ─── Main ─── */
+
 async function main(): Promise<void> {
-  log('info', `scaffold · iLab TDI${DRY ? ' [dry-run]' : ''}`);
+  log('info', `scaffold · iLab TDI${DRY ? ' [dry-run]' : ''}  ·  backend: ${BACKEND}`);
 
   printPlan();
 
@@ -137,61 +141,73 @@ async function main(): Promise<void> {
     }
   }
 
-  // 1. Mutar archivos
-  for (const m of MUTATIONS) {
-    applyMutation(m);
+  // 1. Mutar archivos que quedan
+  for (const m of MUTATIONS) applyMutation(m);
+
+  // 2. Borrar pages y components de docs
+  removeDir('src/pages/docs');
+  removeFile('src/components/doc-sidebar.tsx');
+  removeFile('src/components/doc-viewer.tsx');
+
+  // 3. Borrar carpeta `packages/` · solo sirve para publicar a npm
+  removeDir('packages');
+
+  // 4. Si el backend NO es PHP, quitar backend/ y sus scripts
+  if (BACKEND !== 'php') {
+    removeDir('backend');
+    removeFile('scripts/db-setup.ts');
+    removeFile('scripts/db-user.ts');
+    removeFile('scripts/generate-backend-config.mjs');
+    removePackageJsonScripts(['db:setup', 'db:user']);
   }
 
-  // 2. Borrar directorios
-  for (const dir of DOC_DIRS) {
-    removeDir(dir);
-  }
-
-  // 3. Borrar archivos
-  for (const file of DOC_FILES) {
-    removeFile(file);
-  }
-
-  // 4. Borrar carpeta docs/ (a menos que --keep-md)
-  if (!KEEP_MD) {
-    removeDir(DOCS_ROOT);
-  } else {
-    log('info', `docs/ conservado (--keep-md)`);
-  }
-
-  // 5. Desinstalar deps
+  // 5. Borrar los scripts del template que ya cumplieron
+  //    (bootstrap, scaffold, _shared — no se necesitan en el proyecto final)
   if (!DRY) {
-    uninstallDeps();
-    removeScaffoldScriptFromPackageJson();
+    removePackageJsonScripts(['bootstrap', 'scaffold']);
   }
+  removeFile('scripts/bootstrap.ts');
+  removeFile('scripts/_shared.ts');
 
-  // 6. Auto-eliminar
+  // 6. Desinstalar deps de docs (react-markdown, etc.)
+  if (!DRY) uninstallDeps();
+
+  // 7. Auto-eliminar este script
   if (!DRY) {
-    const self = resolve(ROOT, 'scripts/scaffold.ts');
     try {
-      unlinkSync(self);
+      unlinkSync(resolve(ROOT, 'scripts/scaffold.ts'));
       log('ok', 'scripts/scaffold.ts (self) removido');
     } catch {
       /* noop */
     }
+
+    // 8. Si scripts/ quedó vacío, borrarlo
+    try {
+      rmSync(resolve(ROOT, 'scripts'), { recursive: true, force: false });
+      log('ok', 'scripts/ eliminado (quedó vacío)');
+    } catch {
+      /* sigue teniendo archivos · lo dejamos */
+    }
   }
 
   log('ok', 'Scaffold completado.');
-  log(
-    'info',
-    'Siguiente paso:\n    git init && git add . && git commit -m "chore: init from template"\n    pnpm dev'
-  );
+  log('info', 'Siguiente paso:\n    git add . && git commit -m "chore: init"\n    pnpm dev');
 }
 
 function printPlan(): void {
   console.log('\nVoy a:');
-  console.log('  • eliminar dirs:    ' + DOC_DIRS.join(', '));
-  console.log('  • eliminar files:   ' + DOC_FILES.join(', '));
-  console.log(`  • eliminar docs/:   ${KEEP_MD ? 'NO (--keep-md)' : 'sí'}`);
+  console.log('  • eliminar pages de docs  (src/pages/docs/)');
+  console.log('  • eliminar docs en components (doc-sidebar, doc-viewer)');
+  console.log('  • eliminar packages/  (solo sirve para publicar a npm)');
+  if (BACKEND !== 'php') {
+    console.log(`  • eliminar backend/ y scripts de DB  (backend elegido: ${BACKEND})`);
+  } else {
+    console.log('  • mantener backend/ + db-setup, db-user  (backend: PHP)');
+  }
+  console.log('  • eliminar bootstrap.ts y scaffold.ts  (ya cumplieron)');
   console.log('  • limpiar archivos:');
   for (const m of MUTATIONS) console.log(`      - ${m.file}  (${m.description})`);
-  console.log('  • desinstalar deps: ' + DEPS_TO_REMOVE.join(', '));
-  console.log('  • self-destruct:    scripts/scaffold.ts');
+  console.log(`  • desinstalar deps: ${DEPS_TO_REMOVE.join(', ')}`);
 }
 
 function applyMutation(m: Mutation): void {
@@ -230,16 +246,31 @@ function removeDir(rel: string): void {
 
 function removeFile(rel: string): void {
   const path = resolve(ROOT, rel);
-  if (!existsSync(path)) {
-    log('info', `${rel} — no existe, saltado`);
-    return;
-  }
+  if (!existsSync(path)) return;
   if (DRY) {
     log('info', `[dry] ${rel} — eliminaría`);
     return;
   }
   unlinkSync(path);
   log('ok', `${rel} eliminado`);
+}
+
+function removePackageJsonScripts(keys: string[]): void {
+  const pkgPath = resolve(ROOT, 'package.json');
+  const pkg = JSON.parse(readFileSync(pkgPath, 'utf8')) as {
+    scripts?: Record<string, string>;
+  };
+  let changed = false;
+  for (const key of keys) {
+    if (pkg.scripts && key in pkg.scripts) {
+      delete pkg.scripts[key];
+      changed = true;
+    }
+  }
+  if (changed) {
+    writeFileSync(pkgPath, JSON.stringify(pkg, null, 2) + '\n');
+    log('ok', `scripts removidos de package.json: ${keys.join(', ')}`);
+  }
 }
 
 function uninstallDeps(): void {
@@ -265,18 +296,7 @@ function uninstallDeps(): void {
     log('err', 'pnpm remove falló');
     return;
   }
-  log('ok', `deps desinstaladas`);
-}
-
-function removeScaffoldScriptFromPackageJson(): void {
-  const pkgPath = resolve(ROOT, 'package.json');
-  const raw = readFileSync(pkgPath, 'utf8');
-  const pkg = JSON.parse(raw) as { scripts?: Record<string, string> };
-  if (pkg.scripts && 'scaffold' in pkg.scripts) {
-    delete pkg.scripts.scaffold;
-    writeFileSync(pkgPath, JSON.stringify(pkg, null, 2) + '\n');
-    log('ok', 'script "scaffold" removido de package.json');
-  }
+  log('ok', 'deps desinstaladas');
 }
 
 main().catch((err: unknown) => {

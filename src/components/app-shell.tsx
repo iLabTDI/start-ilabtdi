@@ -1,0 +1,38 @@
+import { useState } from 'react';
+import { Outlet } from 'react-router';
+import { Sidebar } from '@/components/sidebar';
+import { Header } from '@/components/header';
+import { MobileNav } from '@/components/mobile-nav';
+import { useLocalStorage } from '@/hooks/use-local-storage';
+import { APP_STORAGE_KEYS } from '@/lib/constants';
+import { cn } from '@/lib/utils';
+
+export function AppShell() {
+  const [collapsed, setCollapsed] = useLocalStorage<boolean>(
+    APP_STORAGE_KEYS.sidebarCollapsed,
+    false
+  );
+  const [mobileOpen, setMobileOpen] = useState(false);
+
+  return (
+    <div className="bg-background relative flex min-h-screen">
+      <Sidebar collapsed={collapsed} onToggle={() => setCollapsed(!collapsed)} />
+
+      <MobileNav open={mobileOpen} onOpenChange={setMobileOpen} />
+
+      <div
+        className={cn(
+          'flex min-h-screen flex-1 flex-col transition-[padding] duration-300',
+          collapsed ? 'lg:pl-[72px]' : 'lg:pl-64'
+        )}
+      >
+        <Header onOpenMobileNav={() => setMobileOpen(true)} />
+        <main className="flex-1 px-4 pt-6 pb-12 sm:px-6 lg:px-10">
+          <div className="mx-auto w-full max-w-6xl">
+            <Outlet />
+          </div>
+        </main>
+      </div>
+    </div>
+  );
+}

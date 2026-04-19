@@ -29,5 +29,3 @@ export const LOGIN_RATE_LIMIT = {
   maxAttempts: 3,
   windowMs: 30_000,
 } as const;
-
-export const GENERIC_AUTH_ERROR = 'Credenciales inválidas. Verifica tu correo y contraseña.';

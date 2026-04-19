@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useState } from 'react';
-import { logger } from '@/lib/logger';
 
 export function useLocalStorage<T>(key: string, initialValue: T): [T, (value: T) => void] {
   const [value, setValue] = useState<T>(() => {
@@ -8,7 +7,7 @@ export function useLocalStorage<T>(key: string, initialValue: T): [T, (value: T)
       const raw = window.localStorage.getItem(key);
       return raw ? (JSON.parse(raw) as T) : initialValue;
     } catch (err) {
-      logger.warn('useLocalStorage parse error', {
+      console.warn('useLocalStorage parse error', {
         key,
         err: err instanceof Error ? err.message : String(err),
       });
@@ -22,7 +21,7 @@ export function useLocalStorage<T>(key: string, initialValue: T): [T, (value: T)
       try {
         window.localStorage.setItem(key, JSON.stringify(next));
       } catch (err) {
-        logger.warn('useLocalStorage write error', {
+        console.warn('useLocalStorage write error', {
           key,
           err: err instanceof Error ? err.message : String(err),
         });
