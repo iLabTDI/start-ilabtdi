@@ -63,11 +63,15 @@ const MUTATIONS: Mutation[] = [
     description: 'quitar item "Documentación" del sidebar',
     mutate: (c) =>
       c
-        .replace(/,?\s*BookOpen/g, '')
+        // 1) elimina primero el NavItem que usa el icon BookOpen
         .replace(
           /\s*\{\s*label:\s*'Documentación',\s*href:\s*APP_ROUTES\.docs,\s*icon:\s*BookOpen\s*\},\s*/,
           '\n      '
         )
+        // 2) luego saca BookOpen del import (maneja coma antes o después)
+        .replace(/\bBookOpen\s*,\s*/g, '')
+        .replace(/,\s*BookOpen\b/g, '')
+        // 3) entrada del breadcrumb
         .replace(/\s*docs:\s*'Documentación',\s*/g, '\n  '),
   },
   {
@@ -78,11 +82,7 @@ const MUTATIONS: Mutation[] = [
   {
     file: 'src/components/layout/public-nav.tsx',
     description: 'quitar link "Documentación" del nav público',
-    mutate: (c) =>
-      c.replace(
-        /\s*\{\s*label:\s*'Documentación',\s*to:\s*'\/docs'\s*\},?\s*/,
-        '\n'
-      ),
+    mutate: (c) => c.replace(/\s*\{\s*label:\s*'Documentación',\s*to:\s*'\/docs'\s*\},?\s*/, '\n'),
   },
   {
     file: 'src/components/layout/public-footer.tsx',
@@ -249,9 +249,7 @@ function uninstallDeps(): void {
     devDependencies?: Record<string, string>;
   };
 
-  const toRemove = DEPS_TO_REMOVE.filter(
-    (d) => pkg.dependencies?.[d] || pkg.devDependencies?.[d]
-  );
+  const toRemove = DEPS_TO_REMOVE.filter((d) => pkg.dependencies?.[d] || pkg.devDependencies?.[d]);
 
   if (toRemove.length === 0) {
     log('info', 'Deps de docs ya estaban desinstaladas');

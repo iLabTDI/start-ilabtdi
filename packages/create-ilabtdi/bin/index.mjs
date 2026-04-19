@@ -13,7 +13,7 @@ import { existsSync, rmSync, mkdirSync } from 'node:fs';
 import { resolve, basename } from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { createInterface } from 'node:readline/promises';
-import { stdin, stdout, argv, exit, cwd, chdir } from 'node:process';
+import process, { stdin, stdout, argv, exit, cwd, chdir } from 'node:process';
 
 /* ───── Config ───── */
 
@@ -120,6 +120,30 @@ function isValidName(name) {
   return true;
 }
 
+/* ───── Spinner (zero deps) ───── */
+
+function startSpinner(message) {
+  const frames = ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏'];
+  const isTTY = Boolean(stdout.isTTY);
+  if (!isTTY) {
+    console.log(`${c('cyan', '→')} ${message}`);
+    return () => {};
+  }
+  let i = 0;
+  stdout.write('\x1b[?25l'); // hide cursor
+  const render = () => {
+    stdout.write(`\r${c('cyan', frames[i])} ${message}`);
+    i = (i + 1) % frames.length;
+  };
+  render();
+  const id = setInterval(render, 80);
+  return () => {
+    clearInterval(id);
+    stdout.write('\r\x1b[2K'); // clear line
+    stdout.write('\x1b[?25h'); // show cursor
+  };
+}
+
 /* ───── Main ───── */
 
 async function main() {
@@ -161,12 +185,13 @@ async function main() {
   }
 
   /* 3. Clonar template */
-  log.info(`Clonando template en ${c('bold', name)}…`);
+  const stopSpinner = startSpinner(`Clonando template en ${c('bold', name)}…`);
   const cloneResult = spawnSync(
     'git',
     ['clone', '--depth=1', '--branch', TEMPLATE_DEFAULT_BRANCH, TEMPLATE_REPO, targetDir],
     { stdio: 'pipe' }
   );
+  stopSpinner();
 
   if (cloneResult.status !== 0) {
     log.err('No fue posible clonar el template.');
@@ -175,8 +200,10 @@ async function main() {
     exit(1);
   }
 
-  // Borrar historia git del template
+  // Reemplaza la historia del template por un repo git fresco
+  // (evita el warning de husky "can't find .git" y deja el proyecto listo para commits)
   rmSync(resolve(targetDir, '.git'), { recursive: true, force: true });
+  spawnSync('git', ['init', '-q'], { cwd: targetDir, stdio: 'pipe' });
   log.ok(`Template clonado en ${c('cyan', targetDir)}`);
 
   /* 4. Ajustar package.json con el nombre del proyecto */
@@ -210,7 +237,10 @@ async function main() {
   /* 6. Wizard bootstrap */
   if (!flags.skipBootstrap && !flags.skipInstall) {
     log.info('Abriendo el wizard de configuración…\n');
-    const bootstrapResult = spawnSync('pnpm', ['bootstrap'], { stdio: 'inherit' });
+    const bootstrapResult = spawnSync('pnpm', ['bootstrap'], {
+      stdio: 'inherit',
+      env: { ...process.env, CREATE_ILABTDI_NAME: name },
+    });
     if (bootstrapResult.status !== 0) {
       log.warn('El wizard no terminó completo. Puedes correrlo después con `pnpm bootstrap`.');
     }

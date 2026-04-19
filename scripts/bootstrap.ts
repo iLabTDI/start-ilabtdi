@@ -81,12 +81,21 @@ async function main(): Promise<void> {
 async function askQuestions(d: Answers): Promise<Answers> {
   const answers: Answers = { ...d };
 
+  // Cuando vienes de `pnpm create ilabtdi`, el nombre ya se preguntó en el binario.
+  // Lo pasa vía env var y aquí nos saltamos la pregunta.
+  const fromCreate = process.env.CREATE_ILABTDI_NAME;
+
   section('🎨 Branding del proyecto');
 
-  answers.appName = await input({
-    message: '✨ Nombre del proyecto',
-    default: d.appName || 'Mi Proyecto',
-  });
+  if (fromCreate) {
+    answers.appName = fromCreate;
+    log('info', `Proyecto: ${fromCreate}`);
+  } else {
+    answers.appName = await input({
+      message: '✨ Nombre del proyecto',
+      default: d.appName || 'Mi Proyecto',
+    });
+  }
 
   answers.appUrl = await input({
     message: '🌐 URL pública (puedes ponerla después)',
