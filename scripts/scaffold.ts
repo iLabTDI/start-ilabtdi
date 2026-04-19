@@ -149,6 +149,13 @@ async function main(): Promise<void> {
   removeFile('src/components/doc-sidebar.tsx');
   removeFile('src/components/doc-viewer.tsx');
 
+  // 2b. Sustituir la landing pública por un redirect simple al login.
+  //     Y eliminar el nav/footer público (solo servían para la landing).
+  //     Si el estudiante quiere una landing, la diseña desde cero.
+  replaceWithRedirectHome();
+  removeFile('src/components/public-nav.tsx');
+  removeFile('src/components/public-footer.tsx');
+
   // 3. Borrar carpeta `packages/` · solo sirve para publicar a npm
   removeDir('packages');
 
@@ -253,6 +260,38 @@ function removeFile(rel: string): void {
   }
   unlinkSync(path);
   log('ok', `${rel} eliminado`);
+}
+
+function replaceWithRedirectHome(): void {
+  const path = resolve(ROOT, 'src/pages/home/public-home.tsx');
+  if (!existsSync(path)) {
+    log('warn', 'src/pages/home/public-home.tsx — no existe, saltado');
+    return;
+  }
+  if (DRY) {
+    log('info', '[dry] src/pages/home/public-home.tsx — reemplazaría con redirect');
+    return;
+  }
+  const content = `import { Navigate } from 'react-router';
+import { useSession } from '@/lib/auth';
+import { APP_ROUTES, AUTH_ROUTES } from '@/lib/constants';
+
+/**
+ * Raíz del sitio ("/").
+ * Si hay sesión → al home autenticado. Si no → al login.
+ *
+ * ¿Quieres una landing pública? Reemplaza este archivo con tu diseño.
+ */
+export function PublicHome() {
+  const { isAuthenticated, initialized } = useSession();
+  if (!initialized) return null;
+  return (
+    <Navigate to={isAuthenticated ? APP_ROUTES.appHome : AUTH_ROUTES.login} replace />
+  );
+}
+`;
+  writeFileSync(path, content);
+  log('ok', 'src/pages/home/public-home.tsx — reemplazado por redirect al login');
 }
 
 function removePackageJsonScripts(keys: string[]): void {
