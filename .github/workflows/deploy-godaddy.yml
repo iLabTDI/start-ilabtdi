@@ -85,7 +85,7 @@ jobs:
     timeout-minutes: 15
     environment:
       name: production
-      url: https://ilabtdi.com
+      url: https://start.ilabtdi.com
 
     steps:
       - name: Checkout
@@ -112,10 +112,10 @@ jobs:
 
       - name: Build
         env:
-          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
-          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL || 'https://placeholder.supabase.co' }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY || 'placeholder-anon-key-xxxxxxxxxxxxxxxx' }}
           VITE_APP_NAME: ${{ vars.VITE_APP_NAME || 'iLab TDI' }}
-          VITE_APP_URL: ${{ vars.VITE_APP_URL || 'https://ilabtdi.com' }}
+          VITE_APP_URL: ${{ vars.VITE_APP_URL || 'https://start.ilabtdi.com' }}
           VITE_AUTH_BACKEND: ${{ vars.VITE_AUTH_BACKEND || 'supabase' }}
           VITE_API_URL: ${{ vars.VITE_API_URL || '/api' }}
         run: pnpm build
