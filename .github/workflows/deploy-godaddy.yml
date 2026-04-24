@@ -140,7 +140,7 @@ jobs:
           ls -la backend/
 
       - name: Deploy SPA (dist/) via FTP
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        uses: SamKirkland/FTP-Deploy-Action@v4.4.0
         with:
           server: ${{ secrets.FTP_SERVER }}
           username: ${{ secrets.FTP_USERNAME }}
@@ -160,7 +160,7 @@ jobs:
 
       - name: Deploy backend (backend/) via FTP
         if: ${{ vars.VITE_AUTH_BACKEND == 'php' }}
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        uses: SamKirkland/FTP-Deploy-Action@v4.4.0
         with:
           server: ${{ secrets.FTP_SERVER }}
           username: ${{ secrets.FTP_USERNAME }}
