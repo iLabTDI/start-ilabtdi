@@ -133,8 +133,8 @@ importers:
         specifier: ^15.3.0
         version: 15.5.2
       mysql2:
-        specifier: ^3.22.1
-        version: 3.22.1(@types/node@22.19.17)
+        specifier: ^3.22.3
+        version: 3.22.3(@types/node@22.19.17)
       prettier:
         specifier: ^3.4.2
         version: 3.8.3
@@ -2554,8 +2554,8 @@ packages:
     resolution: {integrity: sha512-dkEJPVvun4FryqBmZ5KhDo0K9iDXAwn08tMLDinNdRBNPcYEDiWYysLcc6k3mjTMlbP9KyylvRpd4wFtwrT9rw==}
     engines: {node: ^20.17.0 || >=22.9.0}
 
-  mysql2@3.22.1:
-    resolution: {integrity: sha512-48+9UXehKyxxiP2pqCxUq+MSFvX+v41jwsSpFDQO/jAoFuAELutBGJUhWJnDbe82/OBlIhSBMC82WeonmznT/Q==}
+  mysql2@3.22.3:
+    resolution: {integrity: sha512-uWWxvZSRvRhtBdh2CdcuK83YcOfPdmEeEYB069bAmPnV93QApDGVPuvCQOLjlh7tYHEWdgQPrn6kosDxHBVLkA==}
     engines: {node: '>= 8.0'}
     peerDependencies:
       '@types/node': '>= 8'
@@ -5498,7 +5498,7 @@ snapshots:
 
   mute-stream@3.0.0: {}
 
-  mysql2@3.22.1(@types/node@22.19.17):
+  mysql2@3.22.3(@types/node@22.19.17):
     dependencies:
       '@types/node': 22.19.17
       aws-ssl-profiles: 1.1.2
